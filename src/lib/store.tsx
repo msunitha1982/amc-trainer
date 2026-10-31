@@ -89,25 +89,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const userId = session?.user.id ?? null
 
+  // Both refreshers read the session at call time: a guest session can start in the middle of a
+  // submission, after callers captured these functions.
   const refreshProfile = useCallback(async () => {
-    if (!userId) return setProfile(null)
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+    const { data: auth } = await supabase.auth.getSession()
+    const id = auth.session?.user.id
+    if (!id) return setProfile(null)
+    const { data } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle()
     setProfile((data as Profile) ?? null)
-  }, [userId])
+  }, [])
 
   const refreshProgress = useCallback(async () => {
-    if (!userId) return setProgress(EMPTY_PROGRESS)
+    const { data: auth } = await supabase.auth.getSession()
+    if (!auth.session) return setProgress(EMPTY_PROGRESS)
     const { data } = await supabase.rpc('get_my_progress')
     const d = (data ?? { status: {}, bookmarks: [] }) as { status: Progress['status']; bookmarks: string[] }
     setProgress({ status: d.status ?? {}, bookmarks: new Set(d.bookmarks ?? []) })
-  }, [userId])
+  }, [])
 
   useEffect(() => {
-    // Fetch the signed-in user's data whenever the user changes.
+    // Fetch the signed-in user's data whenever the user changes (async; state updates after await).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshProfile()
     void refreshProgress()
-  }, [refreshProfile, refreshProgress])
+  }, [userId, refreshProfile, refreshProgress])
 
   const ensureUser = useCallback(async () => {
     const { data } = await supabase.auth.getSession()
