@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { DEFAULT_FILTERS, type Filters, type Mode, type Status } from '../lib/filters.ts'
 import { BANDS, type Band } from '../lib/rating.ts'
+import { useStore } from '../lib/store.tsx'
 import { MAJOR_TOPICS, TOPICS } from '../lib/taxonomy.ts'
 import { Chip, cx } from './ui.tsx'
 
-const YEARS = Array.from({ length: 26 }, (_, i) => 2000 + i)
 const NUMS = Array.from({ length: 25 }, (_, i) => i + 1)
 
 function Segmented<T extends string>({ value, options, onChange, label }: {
@@ -47,6 +47,10 @@ const selectCls = 'rounded-md border border-slate-300 bg-white px-2 py-1 text-sm
 
 export function FilterPanel({ filters, onChange, count }: { filters: Filters; onChange: (f: Filters) => void; count: number }) {
   const [openTopic, setOpenTopic] = useState<string | null>(null)
+  const { problems } = useStore()
+  // Only offer years that have problems (e.g. 2025 isn't archived yet).
+  const lastYear = problems.reduce((m, p) => Math.max(m, p.y), 2000)
+  const YEARS = Array.from({ length: lastYear - 1999 }, (_, i) => 2000 + i)
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch })
   const toggle = <T,>(arr: T[], v: T) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v])
 
@@ -83,7 +87,7 @@ export function FilterPanel({ filters, onChange, count }: { filters: Filters; on
             {YEARS.map((y) => <option key={y}>{y}</option>)}
           </select>
           to
-          <select aria-label="To year" className={selectCls} value={filters.yearMax} onChange={(e) => set({ yearMax: Number(e.target.value), yearMin: Math.min(filters.yearMin, Number(e.target.value)) })}>
+          <select aria-label="To year" className={selectCls} value={Math.min(filters.yearMax, lastYear)} onChange={(e) => set({ yearMax: Number(e.target.value), yearMin: Math.min(filters.yearMin, Number(e.target.value)) })}>
             {YEARS.map((y) => <option key={y}>{y}</option>)}
           </select>
         </div>
