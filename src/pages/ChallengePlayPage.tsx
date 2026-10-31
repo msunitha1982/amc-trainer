@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ProblemCard } from '../components/ProblemCard.tsx'
 import { Avatar, Button, cx, ErrorNote, PageTitle, Section, Spinner } from '../components/ui.tsx'
-import { href } from '../lib/router.ts'
+import { href, navigate } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { errorMessage, supabase } from '../lib/supabase.ts'
+import { avatarSrc, errorMessage, supabase } from '../lib/supabase.ts'
 import { refLabel } from '../lib/types.ts'
 
 interface Challenge {
@@ -24,6 +24,7 @@ interface Person {
   id: string
   username: string
   avatar: string
+  avatar_url: string | null
 }
 
 export function ChallengePlayPage({ id }: { id: string }) {
@@ -34,6 +35,7 @@ export function ChallengePlayPage({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null)
   const [index, setIndex] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  const [error2, setError2] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const { data, error: e } = await supabase.from('challenges').select('*').eq('id', id).maybeSingle()
@@ -44,7 +46,7 @@ export function ChallengePlayPage({ id }: { id: string }) {
     const list = (es as Entry[]) ?? []
     setEntries(list)
     const ids = [...new Set([...list.map((x) => x.user_id), (data as Challenge).creator_id])]
-    const { data: ps } = await supabase.from('profiles').select('id,username,avatar').in('id', ids)
+    const { data: ps } = await supabase.from('profiles').select('id,username,avatar,avatar_url').in('id', ids)
     setPeople(Object.fromEntries(((ps as Person[]) ?? []).map((p) => [p.id, p])))
   }, [id])
 
@@ -98,6 +100,7 @@ export function ChallengePlayPage({ id }: { id: string }) {
           {copied ? 'Link copied' : 'Copy link'}
         </Button>
       </div>
+      {error2 && <ErrorNote>{error2}</ErrorNote>}
 
       {current && playing !== null ? (
         <div>
@@ -148,7 +151,7 @@ export function ChallengePlayPage({ id }: { id: string }) {
                     <td className="whitespace-nowrap py-2 pr-6">
                       {people[row.uid] ? (
                         <a href={href(`u/${people[row.uid].username}`)} className="inline-flex items-center gap-2 hover:underline">
-                          <Avatar name={people[row.uid].username} color={people[row.uid].avatar} size={20} />
+                          <Avatar name={people[row.uid].username} color={people[row.uid].avatar} url={avatarSrc(people[row.uid].avatar_url)} size={20} />
                           {people[row.uid].username}
                         </a>
                       ) : '…'}
@@ -176,6 +179,20 @@ export function ChallengePlayPage({ id }: { id: string }) {
               </tbody>
             </table>
           </div>
+        )}
+        {me === ch.creator_id && (
+          <button
+            type="button"
+            className="mt-6 text-sm text-ink-3 hover:text-bad"
+            onClick={async () => {
+              if (!window.confirm('Delete this challenge and everyone’s results?')) return
+              const { error: e } = await supabase.rpc('delete_challenge', { p_id: ch.id })
+              if (e) return setError2(errorMessage(e))
+              navigate('challenges')
+            }}
+          >
+            Delete challenge
+          </button>
         )}
         {(myDone.size === ch.problem_ids.length || !me) && (
           <ol className="mt-6 list-decimal space-y-1 pl-5 text-sm text-ink-3">

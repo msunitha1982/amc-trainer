@@ -2,19 +2,20 @@ import { useEffect, useState } from 'react'
 import { Avatar, cx, inputCls, linkCls, PageTitle, Section, Spinner } from '../components/ui.tsx'
 import { href, type Route } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { supabase } from '../lib/supabase.ts'
+import { avatarSrc, supabase } from '../lib/supabase.ts'
 import { liveStreak } from '../lib/time.ts'
 
 interface Mini {
   id: string
   username: string
   avatar: string
+  avatar_url: string | null
   rating: number
   solved_count: number
   current_streak: number
   last_active_day: string | null
 }
-const COLS = 'id,username,avatar,rating,solved_count,current_streak,last_active_day'
+const COLS = 'id,username,avatar,avatar_url,rating,solved_count,current_streak,last_active_day'
 
 function PeopleList({ people, empty }: { people: Mini[] | null; empty: string }) {
   if (!people) return <Spinner />
@@ -24,7 +25,7 @@ function PeopleList({ people, empty }: { people: Mini[] | null; empty: string })
       {people.map((p) => (
         <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
           <a href={href(`u/${p.username}`)} className="flex items-center gap-2.5 hover:underline">
-            <Avatar name={p.username} color={p.avatar} size={24} />
+            <Avatar name={p.username} color={p.avatar} url={avatarSrc(p.avatar_url)} size={24} />
             {p.username}
           </a>
           <span className="text-sm tabular-nums text-ink-3">

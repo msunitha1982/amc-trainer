@@ -5,7 +5,7 @@ import { Avatar, Button, cx, ErrorNote, linkCls, Section, Spinner, Stat } from '
 import { BANDS } from '../lib/rating.ts'
 import { href, navigate } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { errorMessage, supabase, type Profile } from '../lib/supabase.ts'
+import { avatarSrc, errorMessage, supabase, type Profile } from '../lib/supabase.ts'
 import { MAJOR_TOPICS, TOPICS, type MajorTopic } from '../lib/taxonomy.ts'
 import { liveStreak } from '../lib/time.ts'
 
@@ -95,7 +95,7 @@ export function ProfilePage({ username }: { username: string }) {
   return (
     <div className="mx-auto max-w-3xl space-y-10">
       <header className="flex flex-wrap items-start gap-5">
-        <Avatar name={p.username} color={p.avatar} size={56} />
+        <Avatar name={p.username} color={p.avatar} url={avatarSrc(p.avatar_url)} size={56} />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight">
             {p.username}

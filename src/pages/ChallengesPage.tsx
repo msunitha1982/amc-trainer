@@ -77,12 +77,26 @@ export function ChallengesPage() {
     }
   }
 
-  const list = (rows: ChallengeRow[]) => (
+  const remove = async (c: ChallengeRow) => {
+    if (!window.confirm(`Delete “${c.title}” and everyone's results for it?`)) return
+    const { error: e } = await supabase.rpc('delete_challenge', { p_id: c.id })
+    if (e) return setError(errorMessage(e))
+    setMine((m) => m.filter((x) => x.id !== c.id))
+  }
+
+  const list = (rows: ChallengeRow[], deletable = false) => (
     <ul className="divide-y divide-line">
       {rows.map((c) => (
         <li key={c.id} className="flex items-baseline justify-between gap-4 py-2.5">
           <a href={href(`c/${c.id}`)} className="hover:underline">{c.title}</a>
-          <span className="text-sm text-ink-3">{c.problem_ids.length} problems · {new Date(c.created_at).toLocaleDateString()}</span>
+          <span className="text-sm text-ink-3">
+            {c.problem_ids.length} problems · {new Date(c.created_at).toLocaleDateString()}
+            {deletable && (
+              <button type="button" className="ml-4 hover:text-bad" onClick={() => void remove(c)}>
+                Delete
+              </button>
+            )}
+          </span>
         </li>
       ))}
     </ul>
@@ -111,7 +125,7 @@ export function ChallengesPage() {
         </p>
         {error && <div className="mt-3"><ErrorNote>{error}</ErrorNote></div>}
       </section>
-      {mine.length > 0 && <Section title="Created by you">{list(mine)}</Section>}
+      {mine.length > 0 && <Section title="Created by you">{list(mine, true)}</Section>}
       {played.length > 0 && <Section title="Played">{list(played)}</Section>}
     </div>
   )

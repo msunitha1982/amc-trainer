@@ -20,8 +20,8 @@ export function AboutPage() {
       <Section title="Ratings">
         <p className="text-ink-2">
           You and every problem have a Glicko rating. Solving a problem counts as beating it; missing it counts as losing. A problem's
-          starting rating comes from its position on the test (AMC 10 #1 is 700 and #25 is 2020; AMC 12 #1 is 800 and #25 is 2240),
-          and it moves as people answer it. Only your first answer to a problem is rated, and a wrong first answer costs rating.
+          starting rating comes from its position on the test (in 2024, AMC 10 #1 is 700 and #25 is 2020; AMC 12 #1 is 800 and #25
+          is 2240) and its year, since older contests were easier: each year earlier is 6 points lower. It then moves as people answer it. Only your first answer to a problem is rated, and a wrong first answer costs rating.
         </p>
         <p className="mt-3 text-ink-2">Difficulty: Warm-up below 1100, Medium 1100–1499, Hard 1500–1899, Boss 1900 and up. Days roll over at midnight US Eastern.</p>
       </Section>

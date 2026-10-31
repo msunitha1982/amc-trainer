@@ -158,8 +158,11 @@ export const AVATAR_COLORS: Record<string, string> = {
   sand: '#a08453',
 }
 
-export function Avatar({ name, color, size = 32 }: { name: string; color: string; size?: number }) {
+export function Avatar({ name, color, url, size = 32 }: { name: string; color: string; url?: string | null; size?: number }) {
   const bg = AVATAR_COLORS[color] ?? AVATAR_COLORS.glacier
+  if (url) {
+    return <img src={url} alt="" width={size} height={size} loading="lazy" className="shrink-0 rounded-[3px] object-cover" style={{ width: size, height: size }} />
+  }
   return (
     <span
       aria-hidden

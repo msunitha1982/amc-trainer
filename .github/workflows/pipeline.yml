@@ -55,11 +55,12 @@ jobs:
         run: |
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/problems.sql
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/answers.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/solutions.sql
       - name: Push results to a branch and open a PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          rm -f supabase/seed/answers.sql   # never commit answers
+          rm -f supabase/seed/answers.sql supabase/seed/solutions.sql data/solutions.json   # never commit answers
           git config user.name "github-actions[bot]"
           git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
           branch="data-refresh-${{ github.run_number }}"

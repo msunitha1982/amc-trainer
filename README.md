@@ -50,6 +50,7 @@ Build-time scripts in `scripts/` (run with `tsx`). Their output is committed as 
 
 - **Source.** The AoPS Wiki API sits behind a Cloudflare bot challenge, and this project does not try to bypass it. The fetcher probes the API once per run and otherwise reads the Internet Archive's Wayback Machine copies of the same pages. It sends a custom User-Agent, throttles requests, caches everything and backs off on errors. All scraped text is treated as data: only text, LaTeX source and image URLs are extracted, and they are rendered through React text nodes and KaTeX with `trust: false`.
 - **Topics.** `data/topics.json` maps each problem id to 1–3 tags from the taxonomy in `src/lib/taxonomy.ts`. It was produced by Claude reading each problem and its wiki solutions in batches, then spot-checked by topic. New problems from a re-run show up untagged in `DATA_REPORT.md` until they're added.
+- **Solutions.** The first few written solutions for each problem are shown in the app, but only after you've answered it. They reveal the answer, so like the answers they never go into the static JSON. They're written to gitignored files (`data/solutions.json`, `supabase/seed/solutions.sql`) and loaded into `private.solutions`, which only the `get_solutions` RPC can read, and only for players who have already answered that problem. Without psql access, `scripts/solutions-blob.ts` encrypts the file with a one-time key so the database can fetch it from a temporary URL and decrypt it with pgcrypto. Diagrams inside solutions are loaded from AoPS's image server.
 - **Answers.** Answers come only from each contest's answer-key page, cross-checked against the answers boxed in the wiki solutions. Records with a missing or uncertain answer are not shipped. Answers are written to `supabase/seed/answers.sql`, which is gitignored and never part of the site.
 - **Re-run in CI.** The **Re-run data pipeline** workflow (Actions tab → Run workflow) executes all steps and opens a PR from a `data-refresh-N` branch. If you add a `SUPABASE_DB_URL` repository secret, it also upserts problems and answers into the database. Use the **Session pooler** connection string from Supabase → Connect, not the direct one: free-tier direct hosts are IPv6-only, and GitHub's runners can't reach them.
 
@@ -59,7 +60,8 @@ Everything is in `supabase/migrations/` (apply in order with the Supabase CLI, `
 
 ```bash
 psql "$SUPABASE_DB_URL" -f supabase/seed/problems.sql
-psql "$SUPABASE_DB_URL" -f supabase/seed/answers.sql   # generated locally by the pipeline; never commit
+psql "$SUPABASE_DB_URL" -f supabase/seed/answers.sql     # generated locally by the pipeline; never commit
+psql "$SUPABASE_DB_URL" -f supabase/seed/solutions.sql   # same: solutions reveal answers
 ```
 
 **Security model**
@@ -68,9 +70,10 @@ psql "$SUPABASE_DB_URL" -f supabase/seed/answers.sql   # generated locally by th
 - Every write goes through an RPC. The exposed functions in `public` are thin `SECURITY INVOKER` wrappers around `SECURITY DEFINER` implementations in a `private` schema that PostgREST doesn't expose.
 - **Answers** live in `private.answers`, readable only by `private.submit_answer()`. They never appear in the static JSON or the JS bundle; CI fails the deploy if an answer-like field shows up in `dist/data`.
 - **One rated attempt per problem** is enforced by a partial unique index, `attempts(user_id, problem_id) where rated`. Later tries are unrated practice. Each user can submit at most 20 answers a minute.
-- `attempts` rows (which hold the chosen letter) are visible only to their owner. Public profile stats come from aggregate RPCs.
+- `attempts` rows (which hold the chosen letter) are visible only to their owner.
+- **Profile pictures** go in the public `avatars` Storage bucket (512 KB, images only), which the browser resizes to 256 px first. Each user can write only their own `<user id>/` folder, guests can't upload, and nobody can list the bucket. Public profile stats come from aggregate RPCs.
 
-**Ratings.** Glicko-1, computed in SQL (`private.glicko`). Users start at 1200 ± 200. Problems are seeded from test and number (AMC 10 #n: 700 + 55(n−1); AMC 12 #n: 800 + 60(n−1)) at ±150 and adapt as people answer. Each answer also updates the user's rating for each major topic of the problem. `src/lib/rating.ts` mirrors the formula, and golden-vector tests pin it to the SQL.
+**Ratings.** Glicko-1, computed in SQL (`private.glicko`). Users start at 1200 ± 200. Problems are seeded from test, number and year (AMC 10 #n: 700 + 55(n−1); AMC 12 #n: 800 + 60(n−1); minus 6 per year before 2024, because older contests were easier) at ±150, and adapt as people answer. Each answer also updates the user's rating for each major topic of the problem. `src/lib/rating.ts` mirrors the formula, and golden-vector tests pin it to the SQL.
 
 **Scheduled jobs.** `pg_cron` refreshes the leaderboard snapshots every 15 minutes and pre-picks the daily problem. A GitHub Action (`keepalive.yml`) pings the `ping` RPC daily so the free project never auto-pauses.
 

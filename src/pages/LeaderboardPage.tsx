@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Avatar, cx, ErrorNote, PageTitle, Spinner } from '../components/ui.tsx'
 import { href } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { errorMessage, supabase } from '../lib/supabase.ts'
+import { avatarSrc, errorMessage, supabase } from '../lib/supabase.ts'
 
 interface Row {
   rank: number
@@ -20,6 +20,7 @@ export function LeaderboardPage() {
   const [tab, setTab] = useState<'global' | 'weekly'>('global')
   const [rows, setRows] = useState<Row[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [photos, setPhotos] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
     let alive = true
@@ -30,8 +31,14 @@ export function LeaderboardPage() {
       .limit(100)
       .then(({ data, error: e }) => {
         if (!alive) return
-        if (e) setError(errorMessage(e))
-        else setRows(data as Row[])
+        if (e) return setError(errorMessage(e))
+        const list = data as Row[]
+        setRows(list)
+        // Snapshots don't carry pictures; look them up live.
+        if (list.length)
+          supabase.from('profiles').select('id,avatar_url').in('id', list.map((r) => r.user_id)).then(({ data: ps }) => {
+            if (alive && ps) setPhotos(Object.fromEntries((ps as { id: string; avatar_url: string | null }[]).map((p) => [p.id, p.avatar_url])))
+          })
       })
     return () => {
       alive = false
@@ -78,7 +85,7 @@ export function LeaderboardPage() {
                 <td className="py-2.5 tabular-nums text-ink-3">{r.rank}</td>
                 <td className="py-2.5">
                   <a href={href(`u/${r.username}`)} className="inline-flex items-center gap-2.5 hover:underline">
-                    <Avatar name={r.username} color={r.avatar} size={22} />
+                    <Avatar name={r.username} color={r.avatar} url={avatarSrc(photos[r.user_id])} size={22} />
                     {r.username}
                   </a>
                 </td>

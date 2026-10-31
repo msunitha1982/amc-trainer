@@ -38,7 +38,7 @@ export interface Slot {
   statementSource: 'problem-page' | 'test-page' | null
   canonical: string | null
   sharedWith: { wikiName: string; num: number }[]
-  solutions: { heading: string; text: string; boxed: Letter[] }[]
+  solutions: { heading: string; text: string; boxed: Letter[]; segments: Segment[] }[]
   pageUrl: string
   snapshot?: string
 }
@@ -57,6 +57,8 @@ export interface ParsedProblem {
   answerNote?: string
   url: string
   solutionText: string
+  /** First few written solutions, for showing in the app after an answer (contain the answer!). */
+  solutions: { h: string; s: Segment[] }[]
   flags: string[]
   snapshots: string[]
 }
@@ -102,6 +104,7 @@ function main() {
         heading: s.heading,
         text: segmentsToPlainText(s.segments),
         boxed: boxedLetters(s.segments),
+        segments: s.segments,
       }))
       const id = slotId(t, n)
       slots.set(id, {
@@ -254,6 +257,7 @@ function main() {
         .map((s) => `[${s.heading}] ${s.text}`)
         .join('\n\n')
         .slice(0, 2500),
+      solutions: uniqSolutions.filter((s) => s.segments.length).slice(0, 4).map((s) => ({ h: s.heading, s: s.segments })),
       flags,
       snapshots: members.map((m) => m.snapshot ?? '').filter(Boolean),
     })

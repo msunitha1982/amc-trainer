@@ -22,13 +22,19 @@ export function glicko(r: number, rd: number, oppR: number, oppRd: number, score
 /** Expected probability that a player rated `r` solves a problem rated `p`. */
 export const expectedScore = (r: number, p: number) => 1 / (1 + Math.pow(10, (p - r) / 400))
 
+/** Contests have grown harder over the years; each year before this one lowers a seed. */
+export const YEAR_ANCHOR = 2024
+export const PER_YEAR = 6
+
 /**
- * Seed difficulty from test and problem number. The AoPS Wiki publishes only coarse
- * competition-level ratings, not per-problem ones, so position on the test is the signal.
- * The two scales line up on problems shared by both tests (e.g. 10A #22 = 12A #18 ≈ 1850).
+ * Seed difficulty from test, problem number and year. The AoPS Wiki publishes only coarse
+ * competition-level ratings, not per-problem ones, so position on the test is the main signal.
+ * The two scales line up on problems shared by both tests (e.g. 10A #22 = 12A #18 ≈ 1850), and a
+ * 2000 problem starts 144 lower than the same slot in 2024. Must match migration 0009.
  */
-export function seedRating(contest: '10' | '12', n: number): number {
-  return contest === '10' ? 700 + 55 * (n - 1) : 800 + 60 * (n - 1)
+export function seedRating(contest: '10' | '12', n: number, year: number = YEAR_ANCHOR): number {
+  const base = contest === '10' ? 700 + 55 * (n - 1) : 800 + 60 * (n - 1)
+  return base + PER_YEAR * (year - YEAR_ANCHOR)
 }
 
 export type Band = 'warmup' | 'medium' | 'hard' | 'boss'

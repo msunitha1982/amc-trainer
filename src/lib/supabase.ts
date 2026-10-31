@@ -18,6 +18,17 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
 })
 
+/** Public URL of an uploaded profile picture. */
+export const avatarSrc = (path: string | null | undefined) =>
+  path ? supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl : null
+
+/** Remove every file in the signed-in user's avatar folder except `keep`. */
+export async function clearAvatarFiles(userId: string, keep?: string) {
+  const { data } = await supabase.storage.from('avatars').list(userId, { limit: 100 })
+  const paths = (data ?? []).map((f) => `${userId}/${f.name}`).filter((p) => p !== keep)
+  if (paths.length) await supabase.storage.from('avatars').remove(paths)
+}
+
 /** Where email links should return: this exact site (must be in Supabase's Redirect URLs list). */
 export const siteUrl = () => window.location.origin + window.location.pathname
 
@@ -25,6 +36,8 @@ export interface Profile {
   id: string
   username: string
   avatar: string
+  /** Storage path of an uploaded picture in the "avatars" bucket, or null. */
+  avatar_url: string | null
   bio: string
   is_guest: boolean
   rating: number

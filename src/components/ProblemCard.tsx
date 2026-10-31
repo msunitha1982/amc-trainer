@@ -5,7 +5,7 @@ import { reportUrl } from '../lib/report.ts'
 import { useStore } from '../lib/store.tsx'
 import { errorMessage, supabase, type SubmitResult } from '../lib/supabase.ts'
 import { tagLabel } from '../lib/taxonomy.ts'
-import { LETTERS, testLabel, type Letter, type ProblemMeta, type Statement } from '../lib/types.ts'
+import { LETTERS, testLabel, type Letter, type ProblemMeta, type Segment, type Statement } from '../lib/types.ts'
 import { Formula, SegmentsView } from './MathText.tsx'
 import { Button, cx, Difficulty, ErrorNote, linkCls, Spinner } from './ui.tsx'
 
@@ -19,6 +19,47 @@ interface Props {
   onResult?: (r: SubmitResult) => void
 }
 
+interface Solution {
+  h: string
+  s: Segment[]
+}
+
+/** Wiki solutions, fetched from the server only after the player has answered (they reveal the answer). */
+function Solutions({ meta }: { meta: ProblemMeta }) {
+  const [sols, setSols] = useState<Solution[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    supabase.rpc('get_solutions', { p_problem_id: meta.id }).then(({ data, error: e }) => {
+      if (!alive) return
+      if (e) setError(errorMessage(e))
+      else setSols((data as Solution[]) ?? [])
+    })
+    return () => {
+      alive = false
+    }
+  }, [meta.id])
+  return (
+    <section className="mt-10 border-t border-line pt-6" aria-label="Solutions">
+      <div className="mb-2 flex items-baseline justify-between gap-4">
+        <h3 className="font-semibold">Solutions</h3>
+        <a href={meta.url} target="_blank" rel="noreferrer" className="text-sm text-ink-3 hover:text-ink">
+          From the AoPS Wiki
+        </a>
+      </div>
+      {error && <ErrorNote>{error}</ErrorNote>}
+      {!sols && !error && <Spinner label="Loading solutions" />}
+      {sols && sols.length === 0 && <p className="text-sm text-ink-3">No written solutions here; see the AoPS Wiki.</p>}
+      {sols?.map((sol, i) => (
+        <div key={i} className={cx(i > 0 && 'mt-8')}>
+          {sols.length > 1 && <h4 className="text-sm text-ink-3">{sol.h}</h4>}
+          <SegmentsView segments={sol.s} />
+        </div>
+      ))}
+    </section>
+  )
+}
+
 const signed = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`
 
 export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Next problem', onResult }: Props) {
@@ -29,6 +70,7 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
+  const [showSolutions, setShowSolutions] = useState(false)
 
   useEffect(() => {
     // Callers key this component by problem id, so state starts fresh for each problem.
@@ -58,6 +100,7 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
       if (err) throw err
       const r = data as SubmitResult
       setResult(r)
+      if (!r.correct) setShowSolutions(true)
       recordResult(meta.id, r)
       onResult?.(r)
     } catch (e) {
@@ -158,7 +201,8 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
       {stmt && (
         <fieldset className="mt-6" disabled={busy || !!result?.correct}>
           <legend className="sr-only">Answer choices</legend>
-          <div className="grid overflow-hidden rounded-[3px] border border-line-2 sm:grid-cols-5">
+          {/* Equal heights, widths sized to each answer. */}
+          <div className="flex flex-wrap items-stretch gap-2.5">
             {LETTERS.map((L, i) => {
               const selected = choice === L
               const graded = result && selected
@@ -172,16 +216,15 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
                   }}
                   aria-pressed={selected}
                   className={cx(
-                    'flex min-h-14 items-center gap-3 border-line px-4 py-3 text-left transition-colors',
-                    i > 0 && 'border-t sm:border-t-0 sm:border-l',
-                    graded && result.correct && 'bg-good-soft text-good',
-                    graded && !result.correct && 'bg-bad-soft text-bad',
-                    !graded && selected && 'bg-accent text-accent-ink',
-                    !graded && !selected && 'hover:bg-accent-soft',
+                    'flex min-h-14 min-w-20 items-center gap-3 rounded-md border px-4 py-2 text-left transition-colors',
+                    graded && result.correct && 'border-good bg-good-soft text-good',
+                    graded && !result.correct && 'border-bad bg-bad-soft text-bad',
+                    !graded && selected && 'border-accent bg-accent text-accent-ink',
+                    !graded && !selected && 'border-line-2 bg-raised hover:border-accent',
                   )}
                 >
                   <span className="text-sm font-semibold opacity-70">{L}</span>
-                  <span className="problem-text min-w-0 overflow-x-auto text-base!">{stmt.ch ? <Formula v={`\\displaystyle ${stmt.ch[i]}`} /> : null}</span>
+                  <span className="problem-text max-w-full overflow-x-auto text-base!">{stmt.ch ? <Formula v={`\\displaystyle ${stmt.ch[i]}`} /> : null}</span>
                 </button>
               )
             })}
@@ -223,12 +266,14 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
             Skip
           </button>
         )}
-        {result && (
-          <a href={meta.url} target="_blank" rel="noreferrer" className={cx('text-sm', linkCls)}>
-            Solutions on the AoPS Wiki
-          </a>
+        {(result || prior) && !showSolutions && (
+          <button type="button" onClick={() => setShowSolutions(true)} className={cx('text-sm', linkCls)}>
+            Show solutions
+          </button>
         )}
       </div>
+
+      {showSolutions && <Solutions meta={meta} />}
     </article>
   )
 }

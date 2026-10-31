@@ -52,18 +52,18 @@ export function RatingChart({ points }: { points: [number, number][] }) {
         {ticks.map((v) => (
           <g key={v}>
             <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="var(--grid)" strokeWidth={1} />
-            <text x={pad.l - 6} y={y(v) + 3} textAnchor="end" className="fill-[var(--text-muted)] text-[10px] tabular-nums">{v}</text>
+            <text x={pad.l - 6} y={y(v) + 3} textAnchor="end" className="fill-[var(--ink-2)] text-[10px] tabular-nums">{v}</text>
           </g>
         ))}
-        <text x={pad.l} y={H - 6} className="fill-[var(--text-muted)] text-[10px]">{fmt(minT)}</text>
-        <text x={W - pad.r} y={H - 6} textAnchor="end" className="fill-[var(--text-muted)] text-[10px]">{fmt(maxT)}</text>
+        <text x={pad.l} y={H - 6} className="fill-[var(--ink-2)] text-[10px]">{fmt(minT)}</text>
+        <text x={W - pad.r} y={H - 6} textAnchor="end" className="fill-[var(--ink-2)] text-[10px]">{fmt(maxT)}</text>
         <path d={path} fill="none" stroke="var(--series-1)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {/* Mark the latest rating so a single answer is still visible. */}
         <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].r)} r={4} fill="var(--series-1)" />
         {h && hover !== null && (
           <g>
-            <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke="var(--text-muted)" strokeWidth={1} strokeDasharray="3 3" />
-            <circle cx={x(hover)} cy={y(h.r)} r={4.5} fill="var(--series-1)" stroke="var(--surface)" strokeWidth={2} />
+            <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke="var(--ink-2)" strokeWidth={1} strokeDasharray="3 3" />
+            <circle cx={x(hover)} cy={y(h.r)} r={4.5} fill="var(--series-1)" stroke="var(--bg)" strokeWidth={2} />
           </g>
         )}
       </svg>

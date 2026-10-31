@@ -45,13 +45,13 @@ export function Heatmap({ days }: { days: Record<string, number> }) {
         <svg width={width} height={7 * (CELL + GAP) + 18} role="img" aria-label={`Activity calendar: ${total} answers in the last year`}>
           {months.map((m, i) =>
             i > 0 && m.col - months[i - 1].col < 3 ? null : (
-              <text key={m.label + m.col} x={24 + m.col * (CELL + GAP)} y={9} className="fill-[var(--text-muted)] text-[9px]">
+              <text key={m.label + m.col} x={24 + m.col * (CELL + GAP)} y={9} className="fill-[var(--ink-2)] text-[9px]">
                 {m.label}
               </text>
             ),
           )}
           {['Mon', 'Wed', 'Fri'].map((d, i) => (
-            <text key={d} x={0} y={14 + (1 + i * 2) * (CELL + GAP) + 8} className="fill-[var(--text-muted)] text-[9px]">
+            <text key={d} x={0} y={14 + (1 + i * 2) * (CELL + GAP) + 8} className="fill-[var(--ink-2)] text-[9px]">
               {d}
             </text>
           ))}
@@ -82,7 +82,7 @@ export function Heatmap({ days }: { days: Record<string, number> }) {
           <strong>{hover.n}</strong> answer{hover.n === 1 ? '' : 's'} · {new Date(hover.day + 'T12:00:00Z').toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
         </div>
       )}
-      <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[var(--text-muted)]">
+      <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[var(--ink-2)]">
         Less
         {[0, 1, 2, 3, 4].map((l) => (
           <span key={l} className="inline-block h-[11px] w-[11px] rounded-sm" style={{ background: `var(--heat-${l})` }} />

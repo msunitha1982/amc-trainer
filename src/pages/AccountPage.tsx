@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { AVATAR_COLORS, Avatar, Button, cx, ErrorNote, inputCls, linkCls, Note, PageTitle, Section } from '../components/ui.tsx'
 import { href, navigate, type Route } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { errorMessage, siteUrl, supabase } from '../lib/supabase.ts'
+import { avatarSrc, clearAvatarFiles, errorMessage, siteUrl, supabase } from '../lib/supabase.ts'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -40,6 +40,83 @@ function useForm() {
   return { busy, err, run, status }
 }
 
+/** Crop to a centered square and scale to 256px WebP, so uploads stay small (bucket limit 512 KB). */
+async function toAvatarBlob(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file)
+  const side = Math.min(bitmap.width, bitmap.height)
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 256
+  canvas.getContext('2d')!.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, 256, 256)
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/webp', 0.86))
+  if (!blob) throw new Error('Could not process that image')
+  return blob
+}
+
+function PhotoField() {
+  const { profile, session, refreshProfile } = useStore()
+  const f = useForm()
+  if (!profile || !session) return null
+  const guest = !!session.user.is_anonymous
+  const uid = session.user.id
+  return (
+    <div>
+      <div className="mb-1.5 text-sm text-ink-3">Photo</div>
+      <div className="flex flex-wrap items-center gap-4">
+        <Avatar name={profile.username} color={profile.avatar} url={avatarSrc(profile.avatar_url)} size={56} />
+        {guest ? (
+          <span className="text-sm text-ink-3">Save your progress with an email to upload a photo.</span>
+        ) : (
+          <>
+            <label className="cursor-pointer text-sm text-accent underline-offset-4 hover:underline">
+              {profile.avatar_url ? 'Change photo' : 'Upload photo'}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                disabled={f.busy}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  e.target.value = ''
+                  if (!file) return
+                  void f.run(null, async () => {
+                    if (file.size > 15e6) throw new Error('Pick an image under 15 MB')
+                    const path = `${uid}/${Date.now()}.webp`
+                    const { error } = await supabase.storage.from('avatars').upload(path, await toAvatarBlob(file), { contentType: 'image/webp' })
+                    if (error) throw error
+                    const { error: e2 } = await supabase.rpc('set_avatar_url', { p_path: path })
+                    if (e2) throw e2
+                    await clearAvatarFiles(uid, path)
+                    await refreshProfile()
+                    return 'Photo updated.'
+                  })
+                }}
+              />
+            </label>
+            {profile.avatar_url && (
+              <button
+                type="button"
+                className="text-sm text-ink-3 hover:text-ink"
+                onClick={() =>
+                  f.run(null, async () => {
+                    const { error } = await supabase.rpc('set_avatar_url', { p_path: null })
+                    if (error) throw error
+                    await clearAvatarFiles(uid)
+                    await refreshProfile()
+                    return 'Photo removed.'
+                  })
+                }
+              >
+                Remove photo
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      <div className="mt-2">{f.status}</div>
+    </div>
+  )
+}
+
 function ProfileForm() {
   const { profile, refreshProfile } = useStore()
   const [username, setUsername] = useState(profile?.username ?? '')
@@ -69,8 +146,9 @@ function ProfileForm() {
       <Field label="Username">
         <input className={inputCls} value={username} onChange={(e) => setUsername(e.target.value)} pattern="[A-Za-z0-9_]{3,20}" required title="3–20 letters, digits or underscores" />
       </Field>
+      <PhotoField />
       <fieldset>
-        <legend className="mb-1.5 text-sm text-ink-3">Color</legend>
+        <legend className="mb-1.5 text-sm text-ink-3">{profile?.avatar_url ? 'Color (used when no photo)' : 'Color'}</legend>
         <div className="flex flex-wrap items-center gap-2">
           {Object.keys(AVATAR_COLORS).map((c) => (
             <button
@@ -337,6 +415,7 @@ export function AccountPage({ route }: { route: Route }) {
             variant="danger"
             onClick={async () => {
               if (!window.confirm('Delete your account and all progress? This cannot be undone.')) return
+              if (session && !session.user.is_anonymous) await clearAvatarFiles(session.user.id)
               const { error } = await supabase.rpc('delete_account')
               if (error) return setErr(errorMessage(error))
               await supabase.auth.signOut()

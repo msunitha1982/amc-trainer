@@ -55,6 +55,13 @@ describe('seed ratings and bands', () => {
     expect(seedRating('12', 25)).toBe(2240)
   })
 
+  it('lowers older contests by 6 per year before 2024', () => {
+    expect(seedRating('10', 25, 2024)).toBe(2020)
+    expect(seedRating('10', 25, 2000)).toBe(2020 - 144)
+    expect(seedRating('12', 1, 2014)).toBe(800 - 60)
+    expect(seedRating('12', 10, 2023)).toBeLessThan(seedRating('12', 10, 2024))
+  })
+
   it('roughly agrees on real shared problems (2023: 10A #5 = 12A #4, #22 = #18, #25 = #21)', () => {
     for (const [a, b] of [[5, 4], [22, 18], [25, 21]]) expect(Math.abs(seedRating('10', a) - seedRating('12', b))).toBeLessThan(80)
   })

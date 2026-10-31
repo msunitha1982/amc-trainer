@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { APP_NAME } from '../config.ts'
 import { href } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
+import { avatarSrc } from '../lib/supabase.ts'
 import { Avatar, cx } from './ui.tsx'
 
 const NAV = [
@@ -71,7 +72,7 @@ export function Layout({ active, children }: { active: string; children: ReactNo
             {profile && (
               <a href={href(`u/${profile.username}`)} className="flex items-center gap-2 text-sm text-ink-2 hover:text-ink" title="Your profile">
                 <span className="hidden tabular-nums sm:inline">{Math.round(profile.rating)}</span>
-                <Avatar name={profile.username} color={profile.avatar} size={26} />
+                <Avatar name={profile.username} color={profile.avatar} url={avatarSrc(profile.avatar_url)} size={26} />
                 <span className="sr-only">{profile.username}</span>
               </a>
             )}

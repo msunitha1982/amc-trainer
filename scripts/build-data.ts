@@ -86,7 +86,7 @@ function main() {
     tags = [...new Set(tags)].slice(0, 3)
     if (!tags.length) stats.untagged++
 
-    const seeds = r.tests.map((t) => seedRating(t.t.includes('-10') ? '10' : '12', t.n))
+    const seeds = r.tests.map((t) => seedRating(t.t.includes('-10') ? '10' : '12', t.n, r.year))
     const seed = Math.round(seeds.reduce((a, b) => a + b, 0) / seeds.length)
     index.push({ id: r.id, y: r.year, tests: r.tests, tp: tags, r: seed, url: r.url })
     const yr = byYear.get(r.year) ?? {}
@@ -132,6 +132,30 @@ function main() {
       `  from (select ${arr(ids)} as ids) x, generate_series(1, ${ids.length}) i\n` +
       `on conflict (problem_id) do update set answer = excluded.answer;\n`,
   )
+
+  // Solutions: answers are in them, so they only go to gitignored files and then into the private
+  // database table (supabase/seed/solutions.sql via psql, or scripts/solutions-blob.ts).
+  const solutions: Record<string, { h: string; s: Segment[] }[]> = {}
+  for (const r of shipped) {
+    if (!r.solutions?.length) continue
+    solutions[r.id] = r.solutions.map((sol) => ({
+      h: sol.h,
+      s: sol.s.map((seg) => (seg.t === 'math' && renders(seg.v, seg.display) ? { t: 'math', v: seg.v, display: seg.display } : seg)),
+    }))
+  }
+  const solJson = JSON.stringify(solutions)
+  writeFileSync(join(ROOT, 'data', 'solutions.json'), solJson)
+  let tag = 'sol'
+  while (solJson.includes(`$${tag}$`)) tag += 'x'
+  writeFileSync(
+    join(ROOT, 'supabase', 'seed', 'solutions.sql'),
+    `-- GENERATED, GITIGNORED: wiki solutions (they reveal answers). Apply privately; never commit.\n` +
+      `insert into private.solutions (problem_id, solutions)\n` +
+      `select key, value from jsonb_each($${tag}$${solJson}$${tag}$::jsonb) j\n` +
+      `where exists (select 1 from public.problems p where p.id = j.key)\n` +
+      `on conflict (problem_id) do update set solutions = excluded.solutions;\n`,
+  )
+  console.log(`solutions: ${Object.keys(solutions).length} problems, ${(solJson.length / 1e6).toFixed(1)} MB`)
 
   writeReport({ records, shipped, excluded, stats, katexFailures, mergeNotes, version, topics })
   console.log(`shipped ${shipped.length}/${records.length} problems (version ${version}); excluded ${excluded.length}`)
@@ -234,7 +258,7 @@ ${(() => {
 
 - **Source.** The AoPS Wiki's MediaWiki API (and every other wiki URL) returns a Cloudflare bot challenge (HTTP 403) to scripts. We don't try to bypass it. \`scripts/fetch.ts\` probes the API once per run and otherwise reads the Internet Archive's Wayback Machine copies of the same pages. The content is CC BY-SA. Diagrams come from AoPS's image server (\`latex.artofproblemsolving.com\`), which isn't blocked, or else from Wayback.
 - **2025 contests.** The Wayback Machine has only pre-contest placeholder copies of the 2025 pages (taken before November 2025), plus a September 2026 copy that is itself a Cloudflare 403 page. So 2025 problems are absent. Re-running the pipeline picks them up automatically once an archived copy exists or the API opens.
-- **Difficulty.** The AoPS Wiki publishes only coarse, contest-level difficulty ratings (on its "AoPS Wiki:Competition ratings" page), not per-problem ones. Seed ratings therefore come from test and problem number (AMC 10: 700 + 55·(n−1); AMC 12: 800 + 60·(n−1); shared problems average the two). Bands: Warm-up < 1100 ≤ Medium < 1500 ≤ Hard < 1900 ≤ Boss. Ratings then adapt from real results in the database.
+- **Difficulty.** The AoPS Wiki publishes only coarse, contest-level difficulty ratings (on its "AoPS Wiki:Competition ratings" page), not per-problem ones. Seed ratings therefore come from test, problem number and year: AMC 10 is 700 + 55·(n−1), AMC 12 is 800 + 60·(n−1), shared problems average the two, and each year before 2024 subtracts 6, since the contests have grown harder (a 2000 problem starts 144 lower). Bands: Warm-up < 1100 ≤ Medium < 1500 ≤ Hard < 1900 ≤ Boss. Ratings then adapt from real results in the database.
 - **Shared problems.** Slots are merged when the wiki redirects both to one page, when it shows the "from both the … and …" notice, or when statement and choices are textually identical. Merges happen only if the answer keys agree.
 ${ctx.mergeNotes.length ? `\nMerge notes:\n${ctx.mergeNotes.map((m) => `- ${m}`).join('\n')}\n` : ''}
 ${ctx.katexFailures.length ? `\n<details><summary>Sample of formulas KaTeX couldn't render (image fallback used)</summary>\n\n${ctx.katexFailures.map((f) => '- `' + f.replace(/`/g, "'") + '`').join('\n')}\n\n</details>\n` : ''}`

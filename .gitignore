@@ -9,3 +9,6 @@ data/parsed.json
 data/classify
 supabase/seed/answers.sql
 .claude/settings.local.json
+data/solutions.json
+supabase/seed/solutions.sql
+data/solutions.enc
