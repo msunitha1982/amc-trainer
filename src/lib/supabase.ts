@@ -1,10 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../config.ts'
 
+/**
+ * Email links (sign-up confirmation, password reset, email change) come back to the site with the
+ * session in the URL fragment: "#access_token=...&type=signup" or "#error=...". Hash routing also
+ * uses the fragment, so remember what kind of link this was before the auth client consumes it;
+ * the app then routes to the account page with a message.
+ */
+export const authRedirect: { type: string | null; error: string | null } | null = (() => {
+  const h = window.location.hash.replace(/^#\/?/, '')
+  if (!/(^|&)(access_token|error|error_description)=/.test(h)) return null
+  const q = new URLSearchParams(h)
+  return { type: q.get('type'), error: q.get('error_description') ?? q.get('error') }
+})()
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  // Hash routing owns the URL fragment, so don't let auth try to parse it.
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
 })
+
+/** Where email links should return: this exact site (must be in Supabase's Redirect URLs list). */
+export const siteUrl = () => window.location.origin + window.location.pathname
 
 export interface Profile {
   id: string
@@ -52,6 +67,8 @@ export function errorMessage(err: unknown): string {
   if (typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
     const m = (err as { message: string }).message
     if (/anonymous sign-ins are disabled/i.test(m)) return 'Guest play is not enabled on the server yet.'
+    if (/email not confirmed/i.test(m)) return 'Confirm your email first. Check your inbox (and spam), or resend the link below.'
+    if (/rate limit/i.test(m)) return 'Too many emails sent recently. Wait a bit before trying again.'
     if (/failed to fetch/i.test(m)) return 'Network error. Check your connection and try again.'
     return m
   }

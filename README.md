@@ -11,13 +11,13 @@ It runs entirely on free tiers: a static React app on GitHub Pages, and Supabase
 ## Features
 
 - **Solve loop.** Pick a choice, submit, get instant feedback. On a correct answer you get a link to the wiki solutions and a "Next problem" button. Every problem has skip, bookmark, and "report wrong tag/answer" (which opens a prefilled GitHub issue). Keyboard: A–E or 1–5, Enter, N.
-- **Instant filters.** Test (10/12/both), years, A/B, topics and subtopics, difficulty band, problem number, status (unsolved/solved/missed/bookmarked), and mode (random, in order, or recommended for your rating).
+- **Instant filters** (collapsible, below the problem): contest (10/12/both), years, topics and subtopics, difficulty band, problem number, status (unsolved/solved/missed/bookmarked), and order (random, in order, or matched to your rating). The problem on screen is remembered, so reloading or leaving and coming back doesn't reroll it; only Skip, Next, or a filter change that excludes it moves on.
 - **Ratings.** One rated attempt per problem; wrong answers cost rating. All rating math runs in the database.
 - **Profile.** Activity heatmap, current and longest streaks, rating graph, per-topic ratings with a "practice my weakest topic" shortcut, stats and badges.
 - **Daily problem.** Picked deterministically by date, the same for everyone, with its own streak.
 - **Leaderboards.** All-time and weekly, refreshed every 15 minutes by `pg_cron`.
 - **Async challenges.** Turn your current filters into an N-problem set, share the link, and compare results side by side. Includes follows/friends.
-- **Accounts.** Guest play with no sign-up (anonymous auth), upgradable to email + password without losing progress.
+- **Accounts.** Guest play with no sign-up (anonymous auth), upgradable to email + password without losing progress. The full email flows are supported: sign-up confirmation, resending it, password reset, and changing email or password.
 
 ## Run locally
 
@@ -51,7 +51,7 @@ Build-time scripts in `scripts/` (run with `tsx`). Their output is committed as 
 - **Source.** The AoPS Wiki API sits behind a Cloudflare bot challenge, and this project does not try to bypass it. The fetcher probes the API once per run and otherwise reads the Internet Archive's Wayback Machine copies of the same pages. It sends a custom User-Agent, throttles requests, caches everything and backs off on errors. All scraped text is treated as data: only text, LaTeX source and image URLs are extracted, and they are rendered through React text nodes and KaTeX with `trust: false`.
 - **Topics.** `data/topics.json` maps each problem id to 1–3 tags from the taxonomy in `src/lib/taxonomy.ts`. It was produced by Claude reading each problem and its wiki solutions in batches, then spot-checked by topic. New problems from a re-run show up untagged in `DATA_REPORT.md` until they're added.
 - **Answers.** Answers come only from each contest's answer-key page, cross-checked against the answers boxed in the wiki solutions. Records with a missing or uncertain answer are not shipped. Answers are written to `supabase/seed/answers.sql`, which is gitignored and never part of the site.
-- **Re-run in CI.** The **Re-run data pipeline** workflow (Actions tab → Run workflow) executes all steps and pushes a `data-refresh-N` branch with a PR. If you add a `SUPABASE_DB_URL` repository secret (the Postgres connection string from Supabase → Project Settings → Database), it also upserts problems and answers into the database.
+- **Re-run in CI.** The **Re-run data pipeline** workflow (Actions tab → Run workflow) executes all steps and opens a PR from a `data-refresh-N` branch. If you add a `SUPABASE_DB_URL` repository secret, it also upserts problems and answers into the database. Use the **Session pooler** connection string from Supabase → Connect, not the direct one: free-tier direct hosts are IPv6-only, and GitHub's runners can't reach them.
 
 ## Database (Supabase)
 
@@ -79,12 +79,22 @@ psql "$SUPABASE_DB_URL" -f supabase/seed/answers.sql   # generated locally by th
 Authentication → Sign In / Providers:
 
 - **Allow anonymous sign-ins:** on (guest play).
-- **Email provider:** on, with **Confirm email** off (the built-in sender is heavily rate-limited).
-- Authentication → URL Configuration → **Site URL:** `https://msunitha1982.github.io/amc-trainer/`
+- **Email provider:** on. **Confirm email** can be on or off; if it's on, set up custom SMTP (below), because the built-in sender is slow.
 
-### Adding custom SMTP later (to turn email confirmation back on)
+Authentication → URL Configuration:
 
-1. Create an SMTP account with any provider (Resend, Postmark, SendGrid, Amazon SES, …), verify a sending domain, and get the SMTP host, port, user and password.
+- **Site URL:** `https://msunitha1982.github.io/amc-trainer/`
+- **Redirect URLs:** `https://msunitha1982.github.io/amc-trainer/**` and `http://localhost:5173/**`
+
+Email links (confirmations, password resets, email changes) return to the URL the app asks for. Supabase only honors URLs in the Redirect URLs list and otherwise falls back to the Site URL, whose default is `http://localhost:3000`. The app reads the session from the link's `#access_token=…` fragment, then routes to the Account page with a message.
+
+**Why the built-in email is slow:** Supabase's default sender is a shared, best-effort service for development. It is capped at a few emails per hour, can take many minutes to deliver, often lands in spam, and (on new projects) only delivers to members of your Supabase organization. Signing up again with an address that already exists sends nothing (Supabase logs it as `user_repeated_signup`); the app tells you to sign in or reset the password instead.
+
+### Custom SMTP (fast, reliable email)
+
+1. Get SMTP credentials. Two free options:
+   - **Gmail:** turn on 2-step verification, then create an app password at myaccount.google.com/apppasswords. Use host `smtp.gmail.com`, port `465`, your Gmail address as the username, and the app password. This is good for testing (about 500 emails a day).
+   - **Resend / Postmark / SendGrid / Amazon SES:** verify a sending domain and use the provider's SMTP host, port, user and password.
 2. Supabase → Authentication → **Emails** → SMTP Settings → enable custom SMTP and enter those details plus a sender name and address.
 3. Raise the email rate limit under Authentication → **Rate Limits**.
 4. Turn **Confirm email** back on and add the site URL to **Redirect URLs**.

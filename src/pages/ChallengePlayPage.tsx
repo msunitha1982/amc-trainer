@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ProblemCard } from '../components/ProblemCard.tsx'
-import { Button, Card, cx, ErrorNote, Spinner } from '../components/ui.tsx'
+import { Avatar, Button, cx, ErrorNote, PageTitle, Section, Spinner } from '../components/ui.tsx'
 import { href } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
 import { errorMessage, supabase } from '../lib/supabase.ts'
@@ -69,22 +69,25 @@ export function ChallengePlayPage({ id }: { id: string }) {
 
   if (error) return <ErrorNote>{error}</ErrorNote>
   if (ch === undefined || !problems.length) return <Spinner label="Loading challenge" />
-  if (ch === null) return <Card>Challenge “{id}” not found.</Card>
+  if (ch === null) return <p className="text-ink-2">Challenge “{id}” not found.</p>
 
   const playing = index
   const shareUrl = `${location.origin}${location.pathname}#/c/${ch.id}`
   const current = playing !== null ? byId.get(ch.problem_ids[playing]) : undefined
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">⚔️ {ch.title}</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {ch.problem_ids.length} problems{ch.filters?.summary ? ` · ${ch.filters.summary}` : ''} · by{' '}
-            {people[ch.creator_id] ? <a className="underline" href={href(`u/${people[ch.creator_id].username}`)}>{people[ch.creator_id].username}</a> : '…'}
-          </p>
-        </div>
+    <div className="mx-auto max-w-3xl space-y-10">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageTitle
+          sub={
+            <>
+              {ch.problem_ids.length} problems{ch.filters?.summary ? ` · ${ch.filters.summary}` : ''} · by{' '}
+              {people[ch.creator_id] ? <a className="hover:underline" href={href(`u/${people[ch.creator_id].username}`)}>{people[ch.creator_id].username}</a> : '…'}
+            </>
+          }
+        >
+          {ch.title}
+        </PageTitle>
         <Button
           variant="secondary"
           onClick={() => {
@@ -92,13 +95,13 @@ export function ChallengePlayPage({ id }: { id: string }) {
             setTimeout(() => setCopied(false), 2000)
           }}
         >
-          {copied ? 'Link copied ✓' : '🔗 Copy share link'}
+          {copied ? 'Link copied' : 'Copy link'}
         </Button>
       </div>
 
       {current && playing !== null ? (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold">Problem {playing + 1} of {ch.problem_ids.length}</p>
+        <div>
+          <p className="mb-6 text-sm text-ink-3">Problem {playing + 1} of {ch.problem_ids.length} · <button type="button" className="hover:text-ink" onClick={() => setIndex(null)}>Back to results</button></p>
           <ProblemCard
             key={current.id}
             meta={current}
@@ -110,81 +113,79 @@ export function ChallengePlayPage({ id }: { id: string }) {
             }}
             nextLabel="Next in challenge"
           />
-          <Button variant="ghost" onClick={() => setIndex(null)}>Back to results</Button>
+        </div>
+      ) : firstOpen >= 0 ? (
+        <div className="flex flex-wrap items-center gap-4">
+          <Button onClick={() => setIndex(firstOpen)}>{myDone.size === 0 ? 'Start' : 'Continue'}</Button>
+          <span className="text-sm text-ink-2">
+            {myDone.size === 0 ? 'Only your first answer to each problem counts.' : `${myDone.size} of ${ch.problem_ids.length} answered.`}
+          </span>
         </div>
       ) : (
-        <Card>
-          {firstOpen >= 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p>{myDone.size === 0 ? 'Ready? Each problem counts on your first answer.' : `You've answered ${myDone.size} of ${ch.problem_ids.length}.`}</p>
-              <Button onClick={() => setIndex(firstOpen)}>{myDone.size === 0 ? 'Start challenge' : 'Continue'}</Button>
-            </div>
-          ) : (
-            <p>🎉 You've finished this challenge. Share the link and see how friends do.</p>
-          )}
-        </Card>
+        <p className="text-ink-2">You've finished this challenge.</p>
       )}
 
-      <Card className="overflow-x-auto">
-        <h2 className="mb-3 font-bold">Results</h2>
+      <Section title="Results">
         {board.length === 0 ? (
-          <p className="text-sm text-slate-500">No one has played yet.</p>
+          <p className="text-sm text-ink-3">No one has played yet.</p>
         ) : (
-          <table className="text-sm">
-            <thead>
-              <tr>
-                <th scope="col" className="pr-4 text-left">Player</th>
-                {ch.problem_ids.map((pid, i) => (
-                  <th key={pid} scope="col" className="px-1 text-center font-normal text-slate-500" title={byId.get(pid)?.tests.map(refLabel).join(' / ')}>
-                    {i + 1}
-                  </th>
-                ))}
-                <th scope="col" className="pl-3 text-right">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {board.map((row) => (
-                <tr key={row.uid} className={cx(row.uid === me && 'font-semibold')}>
-                  <td className="whitespace-nowrap py-1 pr-4">
-                    {people[row.uid] ? (
-                      <a href={href(`u/${people[row.uid].username}`)} className="hover:underline">
-                        {people[row.uid].avatar} {people[row.uid].username}
-                      </a>
-                    ) : '…'}
-                  </td>
-                  {ch.problem_ids.map((pid) => {
-                    const v = row.m.get(pid)
-                    return (
-                      <td key={pid} className="px-1 text-center">
-                        <span
-                          className={cx(
-                            'inline-flex h-6 w-6 items-center justify-center rounded',
-                            v === true && 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
-                            v === false && 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200',
-                            v === undefined && 'text-slate-400',
-                          )}
-                          aria-label={v === undefined ? 'not answered' : v ? 'correct' : 'wrong'}
-                        >
-                          {v === undefined ? '·' : v ? '✓' : '✗'}
-                        </span>
-                      </td>
-                    )
-                  })}
-                  <td className="pl-3 text-right tabular-nums">{row.score}/{ch.problem_ids.length}</td>
+          <div className="overflow-x-auto">
+            <table className="text-sm">
+              <thead>
+                <tr className="text-ink-3">
+                  <th scope="col" className="pb-2 pr-6 text-left font-normal">Player</th>
+                  {ch.problem_ids.map((pid, i) => (
+                    <th key={pid} scope="col" className="w-7 pb-2 text-center font-normal" title={byId.get(pid)?.tests.map(refLabel).join(' / ')}>
+                      {i + 1}
+                    </th>
+                  ))}
+                  <th scope="col" className="pb-2 pl-4 text-right font-normal">Score</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {board.map((row) => (
+                  <tr key={row.uid} className={cx('border-t border-line', row.uid === me && 'font-semibold')}>
+                    <td className="whitespace-nowrap py-2 pr-6">
+                      {people[row.uid] ? (
+                        <a href={href(`u/${people[row.uid].username}`)} className="inline-flex items-center gap-2 hover:underline">
+                          <Avatar name={people[row.uid].username} color={people[row.uid].avatar} size={20} />
+                          {people[row.uid].username}
+                        </a>
+                      ) : '…'}
+                    </td>
+                    {ch.problem_ids.map((pid) => {
+                      const v = row.m.get(pid)
+                      return (
+                        <td key={pid} className="py-2 text-center">
+                          <span
+                            className={cx(
+                              'inline-block h-4 w-4 rounded-[2px] align-middle',
+                              v === true && 'bg-good',
+                              v === false && 'bg-bad opacity-70',
+                              v === undefined && 'border border-line-2',
+                            )}
+                            title={v === undefined ? 'Not answered' : v ? 'Correct' : 'Wrong'}
+                          />
+                          <span className="sr-only">{v === undefined ? 'not answered' : v ? 'correct' : 'wrong'}</span>
+                        </td>
+                      )
+                    })}
+                    <td className="py-2 pl-4 text-right tabular-nums">{row.score}/{ch.problem_ids.length}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         {(myDone.size === ch.problem_ids.length || !me) && (
-          <ol className="mt-4 list-decimal space-y-1 pl-5 text-xs text-slate-500">
+          <ol className="mt-6 list-decimal space-y-1 pl-5 text-sm text-ink-3">
             {ch.problem_ids.map((pid) => {
               const m = byId.get(pid)
-              return <li key={pid}>{m ? <a className="underline" href={m.url} target="_blank" rel="noreferrer">{m.tests.map(refLabel).join(' / ')}</a> : pid}</li>
+              return <li key={pid}>{m ? <a className="hover:underline" href={m.url} target="_blank" rel="noreferrer">{m.tests.map(refLabel).join(' / ')}</a> : pid}</li>
             })}
           </ol>
         )}
-      </Card>
+      </Section>
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session } from '@supabase/supabase-js'
 import { loadIndex } from './data.ts'
 import { DEFAULT_FILTERS, sanitizeFilters, type Filters, type LiveRatings, type Progress } from './filters.ts'
-import { supabase, type Badge, type Profile, type SubmitResult } from './supabase.ts'
+import { authRedirect, supabase, type Badge, type Profile, type SubmitResult } from './supabase.ts'
 import type { ProblemMeta } from './types.ts'
 
 interface Store {
@@ -70,8 +70,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setAuthReady(true)
+      // Returning from an email link: the auth client has read the tokens; show the outcome.
+      if (authRedirect) {
+        const q = new URLSearchParams(authRedirect.error ? { auth: 'error', msg: authRedirect.error } : { auth: authRedirect.type ?? 'signin' })
+        window.history.replaceState(null, '', `${window.location.pathname}#/account?${q}`)
+        window.dispatchEvent(new HashChangeEvent('hashchange'))
+      }
     })
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s)
+      if (event === 'PASSWORD_RECOVERY') {
+        window.history.replaceState(null, '', `${window.location.pathname}#/account?auth=recovery`)
+        window.dispatchEvent(new HashChangeEvent('hashchange'))
+      }
+    })
     return () => sub.subscription.unsubscribe()
   }, [])
 

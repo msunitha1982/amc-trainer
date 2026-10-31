@@ -33,9 +33,9 @@ export default function App() {
     case 'c': body = arg ? <ChallengePlayPage id={arg} /> : <ChallengesPage />; break
     case 'leaderboard': body = <LeaderboardPage />; break
     case 'friends': body = <FriendsPage route={route} />; break
-    case 'account': body = <AccountPage />; break
+    case 'account': body = <AccountPage route={route} />; break
     case 'about': body = <AboutPage />; break
-    case 'u': body = arg ? <ProfilePage username={arg} /> : <AccountPage />; break
+    case 'u': body = arg ? <ProfilePage username={arg} /> : <AccountPage route={route} />; break
     case 'p': body = arg ? <ProblemPage id={arg} /> : <PracticePage route={route} />; break
     default: body = <PracticePage route={route} />
   }

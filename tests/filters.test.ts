@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyFilters, DEFAULT_FILTERS, pickNext, type Progress } from '../src/lib/filters.ts'
+import { applyFilters, DEFAULT_FILTERS, pickNext, sanitizeFilters, type Progress } from '../src/lib/filters.ts'
 import type { ProblemMeta } from '../src/lib/types.ts'
 
 const P = (id: string, y: number, tests: [string, number][], tp: string[], r: number): ProblemMeta => ({
@@ -17,8 +17,9 @@ describe('applyFilters', () => {
   it('filters by contest, matching shared problems through either test', () => {
     expect(applyFilters(ALL, { ...DEFAULT_FILTERS, contest: '12' }, none).map((p) => p.id)).toEqual(['2023-10A-5', '2001-12-3', '2021F-12B-20'])
   })
-  it('filters by A/B; 2000-2001 have neither', () => {
-    expect(applyFilters(ALL, { ...DEFAULT_FILTERS, variant: 'B' }, none).map((p) => p.id)).toEqual(['2021F-12B-20'])
+  it('drops the retired A/B setting from saved filters', () => {
+    expect('variant' in sanitizeFilters({ variant: 'B', contest: '12' })).toBe(false)
+    expect(sanitizeFilters({ variant: 'B', contest: '12' }).contest).toBe('12')
   })
   it('matches major topics and subtopics', () => {
     expect(applyFilters(ALL, { ...DEFAULT_FILTERS, topics: ['algebra'] }, none)).toHaveLength(2)

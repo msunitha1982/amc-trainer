@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, ErrorNote } from '../components/ui.tsx'
+import { Button, ErrorNote, inputCls, linkCls, PageTitle, Section } from '../components/ui.tsx'
 import { applyFilters } from '../lib/filters.ts'
 import { href, navigate } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
@@ -78,54 +78,41 @@ export function ChallengesPage() {
   }
 
   const list = (rows: ChallengeRow[]) => (
-    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+    <ul className="divide-y divide-line">
       {rows.map((c) => (
-        <li key={c.id} className="flex items-center justify-between py-2">
-          <a href={href(`c/${c.id}`)} className="font-semibold hover:underline">{c.title}</a>
-          <span className="text-xs text-slate-500">{c.problem_ids.length} problems · {new Date(c.created_at).toLocaleDateString()}</span>
+        <li key={c.id} className="flex items-baseline justify-between gap-4 py-2.5">
+          <a href={href(`c/${c.id}`)} className="hover:underline">{c.title}</a>
+          <span className="text-sm text-ink-3">{c.problem_ids.length} problems · {new Date(c.created_at).toLocaleDateString()}</span>
         </li>
       ))}
     </ul>
   )
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">⚔️ Challenges</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Build a problem set from your current Practice filters, share the link, and compare results side by side.
-        </p>
-      </div>
-      <Card>
-        <h2 className="font-bold">New challenge</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Drawing from <strong>{pool.length.toLocaleString()}</strong> problems that match your{' '}
-          <a href={href('practice')} className="text-indigo-600 underline dark:text-indigo-400">Practice filters</a>.
-        </p>
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="flex-1 min-w-48 text-sm">
-            <span className="mb-1 block font-semibold">Title</span>
-            <input
-              value={title}
-              maxLength={80}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Friday geometry duel"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-600 dark:bg-slate-800"
-            />
+    <div className="mx-auto max-w-3xl space-y-10">
+      <PageTitle sub="Pick problems from your practice filters, share the link, compare results.">Challenges</PageTitle>
+      <section>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="min-w-48 flex-1 text-sm">
+            <span className="mb-1.5 block text-ink-3">Title</span>
+            <input value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder="Friday geometry" className={inputCls} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block font-semibold">Problems</span>
-            <select value={n} onChange={(e) => setN(Number(e.target.value))} className="rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-600 dark:bg-slate-800">
+            <span className="mb-1.5 block text-ink-3">Problems</span>
+            <select value={n} onChange={(e) => setN(Number(e.target.value))} className={inputCls + ' w-24'}>
               {[3, 5, 10, 15, 25].map((x) => <option key={x} value={x}>{x}</option>)}
             </select>
           </label>
-          <Button onClick={create} disabled={busy || pool.length < n}>{busy ? 'Creating…' : 'Create & get link'}</Button>
+          <Button onClick={create} disabled={busy || pool.length < n}>{busy ? 'Creating' : 'Create challenge'}</Button>
         </div>
-        {pool.length < n && <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">Not enough matching problems. Widen your filters.</p>}
+        <p className="mt-3 text-sm text-ink-3">
+          {pool.length < n ? 'Not enough matching problems. ' : `Drawn from ${pool.length.toLocaleString()} problems matching your `}
+          <a href={href('practice')} className={linkCls}>practice filters</a>.
+        </p>
         {error && <div className="mt-3"><ErrorNote>{error}</ErrorNote></div>}
-      </Card>
-      {mine.length > 0 && <Card><h2 className="font-bold">Created by you</h2>{list(mine)}</Card>}
-      {played.length > 0 && <Card><h2 className="font-bold">Played</h2>{list(played)}</Card>}
+      </section>
+      {mine.length > 0 && <Section title="Created by you">{list(mine)}</Section>}
+      {played.length > 0 && <Section title="Played">{list(played)}</Section>}
     </div>
   )
 }

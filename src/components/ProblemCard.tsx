@@ -5,9 +5,9 @@ import { reportUrl } from '../lib/report.ts'
 import { useStore } from '../lib/store.tsx'
 import { errorMessage, supabase, type SubmitResult } from '../lib/supabase.ts'
 import { tagLabel } from '../lib/taxonomy.ts'
-import { LETTERS, refLabel, type Letter, type ProblemMeta, type Statement } from '../lib/types.ts'
+import { LETTERS, testLabel, type Letter, type ProblemMeta, type Statement } from '../lib/types.ts'
 import { Formula, SegmentsView } from './MathText.tsx'
-import { BandChip, Button, Card, Chip, cx, ErrorNote, Spinner } from './ui.tsx'
+import { Button, cx, Difficulty, ErrorNote, linkCls, Spinner } from './ui.tsx'
 
 interface Props {
   meta: ProblemMeta
@@ -18,6 +18,8 @@ interface Props {
   /** Called after every graded submission. */
   onResult?: (r: SubmitResult) => void
 }
+
+const signed = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`
 
 export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Next problem', onResult }: Props) {
   const { progress, live, badges, ensureUser, recordResult, toggleBookmark } = useStore()
@@ -72,7 +74,7 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
       if (t.closest('input, textarea, select, [contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return
       const k = e.key.toUpperCase()
       const idx = LETTERS.indexOf(k as Letter) >= 0 ? LETTERS.indexOf(k as Letter) : '12345'.indexOf(k)
-      if (idx >= 0 && !(result?.correct)) {
+      if (idx >= 0 && !result?.correct) {
         setChoice(LETTERS[idx])
         if (result) setResult(null)
       } else if (e.key === 'Enter' && choice && !result) {
@@ -88,89 +90,75 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
 
   const rating = ratingOf(meta, live)
   const stats = live[meta.id]
-  const badgeInfo = (id: string) => badges.find((b) => b.id === id)
+  const badgeName = (id: string) => badges.find((b) => b.id === id)?.name ?? id
+  const [first, ...also] = meta.tests
 
   return (
-    <Card>
-      <header className="flex flex-wrap items-start justify-between gap-3">
+    <article>
+      <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
         <div className="min-w-0">
-          <h2 className="text-lg font-bold">
-            {meta.tests.map((r, i) => (
-              <span key={r.t}>
-                {i > 0 && <span className="mx-1 font-normal text-slate-400">/</span>}
-                {refLabel(r)}
-              </span>
-            ))}
+          <h2 className="text-lg font-semibold">
+            {testLabel(first.t)} <span className="text-ink-3">·</span> Problem {first.n}
           </h2>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <BandChip rating={rating} />
-            {meta.tp.map((t) => (
-              <Chip key={t}>{tagLabel(t)}</Chip>
-            ))}
-            {stats && stats[1] > 0 && (
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {Math.round((100 * stats[2]) / stats[1])}% of {stats[1]} solvers got it
-              </span>
-            )}
-          </div>
+          <p className="mt-0.5 text-sm text-ink-3">
+            {also.length > 0 && <>Also {also.map((r) => `${testLabel(r.t)} #${r.n}`).join(', ')} · </>}
+            <Difficulty rating={rating} />
+            {meta.tp.length > 0 && <> · {meta.tp.map(tagLabel).join(', ')}</>}
+            {stats && stats[1] > 0 && <> · {Math.round((100 * stats[2]) / stats[1])}% of {stats[1]} solved it</>}
+          </p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-4 text-sm">
           <button
             type="button"
             onClick={() => toggleBookmark(meta.id).catch((e) => setError(errorMessage(e)))}
-            className="rounded-lg p-2 text-xl hover:bg-slate-100 dark:hover:bg-slate-800"
             aria-pressed={bookmarked}
-            aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark this problem'}
-            title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
+            className={cx('hover:text-ink', bookmarked ? 'text-accent' : 'text-ink-3')}
           >
-            {bookmarked ? '★' : '☆'}
+            {bookmarked ? 'Bookmarked' : 'Bookmark'}
           </button>
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setReportOpen((o) => !o)}
-              className="rounded-lg p-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-              aria-expanded={reportOpen}
-              title="Report a problem with this problem"
-            >
-              ⚑ <span className="sr-only sm:not-sr-only">Report</span>
+            <button type="button" onClick={() => setReportOpen((o) => !o)} aria-expanded={reportOpen} className="text-ink-3 hover:text-ink">
+              Report
             </button>
             {reportOpen && (
-              <div className="absolute right-0 z-10 mt-1 w-56 rounded-lg border border-slate-200 bg-white p-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-800">
+              <div className="absolute right-0 z-10 mt-2 w-48 rounded-[3px] border border-line-2 bg-raised py-1">
                 {(['tag', 'answer', 'display'] as const).map((k) => (
                   <a
                     key={k}
                     href={reportUrl(meta, k)}
                     target="_blank"
                     rel="noreferrer"
-                    className="block rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    className="block px-3 py-1.5 text-ink-2 hover:bg-accent-soft hover:text-ink"
                     onClick={() => setReportOpen(false)}
                   >
-                    {{ tag: 'Wrong topic tag', answer: 'Wrong answer', display: 'Displays incorrectly' }[k]}
+                    {{ tag: 'Wrong topic', answer: 'Wrong answer', display: 'Displays incorrectly' }[k]}
                   </a>
                 ))}
               </div>
             )}
           </div>
+          <a href={meta.url} target="_blank" rel="noreferrer" className="text-ink-3 hover:text-ink" title="This problem on the AoPS Wiki (CC BY-SA)">
+            Source
+          </a>
         </div>
       </header>
 
       {prior && !result && (
-        <p className="mt-3 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          You {prior === 'solved' ? 'solved' : 'missed'} this one already, so this try is practice and won't change your rating.
+        <p className="mt-4 text-sm text-ink-3">
+          You {prior === 'solved' ? 'solved' : 'missed'} this before. Answers now are practice and don't change your rating.
         </p>
       )}
 
-      <div className="mt-4 text-[1.05rem]">
+      <div className="mt-6">
         {stmt === undefined && !error && <Spinner label="Loading problem" />}
         {stmt === null && <ErrorNote>This problem's text is missing from the data files.</ErrorNote>}
         {stmt && <SegmentsView segments={stmt.s} />}
       </div>
 
       {stmt && (
-        <fieldset className="mt-4" disabled={busy || !!result?.correct}>
+        <fieldset className="mt-6" disabled={busy || !!result?.correct}>
           <legend className="sr-only">Answer choices</legend>
-          <div className="grid gap-2 sm:grid-cols-5">
+          <div className="grid overflow-hidden rounded-[3px] border border-line-2 sm:grid-cols-5">
             {LETTERS.map((L, i) => {
               const selected = choice === L
               const graded = result && selected
@@ -184,90 +172,63 @@ export function ProblemCard({ meta, challengeId, onNext, onSkip, nextLabel = 'Ne
                   }}
                   aria-pressed={selected}
                   className={cx(
-                    'flex min-h-12 items-center gap-2 rounded-xl border-2 px-3 py-2 text-left transition',
-                    graded && result.correct && 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950',
-                    graded && !result.correct && 'border-rose-500 bg-rose-50 dark:bg-rose-950',
-                    !graded && selected && 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950',
-                    !graded && !selected && 'border-slate-200 hover:border-indigo-300 dark:border-slate-700',
+                    'flex min-h-14 items-center gap-3 border-line px-4 py-3 text-left transition-colors',
+                    i > 0 && 'border-t sm:border-t-0 sm:border-l',
+                    graded && result.correct && 'bg-good-soft text-good',
+                    graded && !result.correct && 'bg-bad-soft text-bad',
+                    !graded && selected && 'bg-accent text-accent-ink',
+                    !graded && !selected && 'hover:bg-accent-soft',
                   )}
                 >
-                  <span className="font-bold text-slate-500 dark:text-slate-400">({L})</span>
-                  <span className="min-w-0 overflow-x-auto">{stmt.ch ? <Formula v={stmt.ch[i]} /> : null}</span>
+                  <span className="text-sm font-semibold opacity-70">{L}</span>
+                  <span className="problem-text min-w-0 overflow-x-auto text-base!">{stmt.ch ? <Formula v={`\\displaystyle ${stmt.ch[i]}`} /> : null}</span>
                 </button>
               )
             })}
           </div>
-          {!stmt.ch && (
-            <p className="mt-2 text-xs text-slate-500">The answer choices are shown in the problem text above.</p>
-          )}
         </fieldset>
       )}
 
-      {error && <div className="mt-3"><ErrorNote>{error}</ErrorNote></div>}
+      {error && <div className="mt-4"><ErrorNote>{error}</ErrorNote></div>}
 
       {result && (
-        <div
-          role="status"
-          className={cx(
-            'mt-4 rounded-xl px-4 py-3',
-            result.correct ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100' : 'bg-rose-50 text-rose-900 dark:bg-rose-950 dark:text-rose-100',
-          )}
-        >
-          <p className="text-lg font-bold">
-            {result.correct ? '✅ Correct!' : '❌ Not quite.'}{' '}
+        <div role="status" className="mt-5">
+          <p className={cx('font-semibold', result.correct ? 'text-good' : 'text-bad')}>
+            {result.correct ? 'Correct.' : 'Not quite.'}{' '}
             {result.rated ? (
-              <span className="font-semibold">
-                {result.rating_delta >= 0 ? '+' : ''}
-                {result.rating_delta.toFixed(1)} → {Math.round(result.rating)}
+              <span className="font-normal text-ink-2">
+                Rating {signed(result.rating_delta)} to <span className="tabular-nums">{Math.round(result.rating)}</span>.
               </span>
             ) : (
-              <span className="text-sm font-normal">(practice, unrated)</span>
+              <span className="font-normal text-ink-2">Practice answer, rating unchanged.</span>
             )}
           </p>
-          <p className="mt-1 text-sm">
-            {result.daily_credit && <>☀️ Daily problem done. Daily streak: {result.daily_streak}. </>}
-            🔥 Streak: {result.streak} day{result.streak === 1 ? '' : 's'}
+          <p className="mt-1 text-sm text-ink-2">
+            {result.daily_credit && <>Daily problem done, daily streak {result.daily_streak}. </>}
+            {!result.correct && 'Choose another answer to try again. '}
+            {result.new_badges.length > 0 && <>New badge: {result.new_badges.map(badgeName).join(', ')}.</>}
           </p>
-          {result.new_badges.length > 0 && (
-            <p className="mt-1 text-sm font-semibold">
-              New badge{result.new_badges.length > 1 ? 's' : ''}:{' '}
-              {result.new_badges.map((b) => `${badgeInfo(b)?.icon ?? '🏅'} ${badgeInfo(b)?.name ?? b}`).join(', ')}
-            </p>
-          )}
-          {!result.correct && <p className="mt-1 text-sm">Pick another choice to try again (unrated), or move on.</p>}
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
         {!result?.correct && (
           <Button onClick={submit} disabled={!choice || busy || !stmt}>
-            {busy ? 'Checking…' : 'Submit'}
+            {busy ? 'Checking' : 'Submit'}
           </Button>
         )}
-        {result && onNext && <Button onClick={onNext}>{nextLabel} →</Button>}
-        {!result && onSkip && (
-          <Button variant="ghost" onClick={onSkip}>
+        {result && onNext && <Button onClick={onNext}>{nextLabel}</Button>}
+        {onSkip && !result?.correct && (
+          <button type="button" onClick={onSkip} className="text-sm text-ink-2 hover:text-ink">
             Skip
-          </Button>
-        )}
-        {result && !result.correct && onSkip && (
-          <Button variant="ghost" onClick={onSkip}>
-            Skip
-          </Button>
+          </button>
         )}
         {result && (
-          <a href={meta.url} target="_blank" rel="noreferrer" className="ml-auto text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-            Solutions on the AoPS Wiki ↗
+          <a href={meta.url} target="_blank" rel="noreferrer" className={cx('text-sm', linkCls)}>
+            Solutions on the AoPS Wiki
           </a>
         )}
       </div>
-      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-        Keys: A–E or 1–5 to pick, Enter to submit{onNext ? ', N for next' : ''}. Source:{' '}
-        <a className="underline" href={meta.url} target="_blank" rel="noreferrer">
-          AoPS Wiki
-        </a>{' '}
-        (CC BY-SA).
-      </p>
-    </Card>
+    </article>
   )
 }

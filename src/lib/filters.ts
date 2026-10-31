@@ -8,8 +8,6 @@ export interface Filters {
   contest: 'both' | '10' | '12'
   yearMin: number
   yearMax: number
-  /** 'any' includes 2000-2001 (no A/B split). */
-  variant: 'any' | 'A' | 'B'
   /** Major topics ("geometry") or subtopic tags ("geometry.circles"); a problem matches any. */
   topics: string[]
   bands: Band[]
@@ -23,7 +21,6 @@ export const DEFAULT_FILTERS: Filters = {
   contest: 'both',
   yearMin: 2000,
   yearMax: 2025,
-  variant: 'any',
   topics: [],
   bands: [],
   numMin: 1,
@@ -46,7 +43,6 @@ export function matches(p: ProblemMeta, f: Filters, progress: Progress, live?: L
   const testOk = p.tests.some(
     (r) =>
       (f.contest === 'both' || contestOf(r.t) === f.contest) &&
-      (f.variant === 'any' || variantOf(r.t) === f.variant) &&
       r.n >= f.numMin &&
       r.n <= f.numMax,
   )
@@ -113,7 +109,8 @@ export function pickNext(
 
 /** Serialize/deserialize filters for localStorage and challenge records. */
 export function sanitizeFilters(raw: unknown): Filters {
-  const f = { ...DEFAULT_FILTERS, ...(typeof raw === 'object' && raw ? raw : {}) } as Filters
+  const f = { ...DEFAULT_FILTERS, ...(typeof raw === 'object' && raw ? raw : {}) } as Filters & { variant?: unknown }
+  delete f.variant // the A/B filter was removed; drop it from older saved filters
   if (!Array.isArray(f.topics)) f.topics = []
   if (!Array.isArray(f.bands)) f.bands = []
   return f

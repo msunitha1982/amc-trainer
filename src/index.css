@@ -1,38 +1,108 @@
 @import 'tailwindcss';
 
-/* Class-based dark mode, toggled on <html> (see index.html and Layout's ThemeToggle). */
+/* Class-based dark mode, toggled on <html> (see index.html and Layout's theme toggle). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Chart tokens: one sequential blue ramp for the heatmap and one series color, each with its
-   own dark-mode steps (validated with the dataviz palette validator). */
+/*
+ * Glacier palette. Every color in the app comes from these tokens, so light and dark are each
+ * tuned by hand instead of inverted. Use them through the Tailwind names below (bg-bg, text-ink,
+ * border-line, bg-accent, ...).
+ */
 :root {
-  --surface: #ffffff;
-  --text-muted: #64748b;
-  --grid: #e2e8f0;
-  --series-1: #2a78d6;
-  --heat-0: #ebedf0;
-  --heat-1: #b7d3f6;
-  --heat-2: #6da7ec;
-  --heat-3: #2a78d6;
-  --heat-4: #184f95;
+  --bg: #ecf3f7;
+  --raised: #f8fbfd;
+  --ink: #12232e;
+  --ink-2: #455d6d;
+  --ink-3: #7890a0;
+  --line: #d2e0e9;
+  --line-2: #b2c8d6;
+  --accent: #2c6a8d;
+  --accent-ink: #ffffff;
+  --accent-soft: #dbe9f1;
+  --good: #2d7656;
+  --good-soft: #e2f0e9;
+  --bad: #a1463a;
+  --bad-soft: #f5e4e1;
+  /* Charts: one sequential glacier ramp and one series color. */
+  --heat-0: #e3ebf0;
+  --heat-1: #bcd6e6;
+  --heat-2: #86b5d2;
+  --heat-3: #4a8ab0;
+  --heat-4: #24597b;
+  --series-1: #2c6a8d;
+  --grid: #e3ebf0;
 }
 :root.dark {
-  --surface: #0f172a;
-  --text-muted: #94a3b8;
-  --grid: #1e293b;
-  --series-1: #3987e5;
-  --heat-0: #1e293b;
-  --heat-1: #104281;
-  --heat-2: #1c5cab;
-  --heat-3: #3987e5;
-  --heat-4: #86b6ef;
+  --bg: #0b1820;
+  --raised: #0f2029;
+  --ink: #d9e7ee;
+  --ink-2: #9cb4c2;
+  --ink-3: #6b8596;
+  --line: #1b313d;
+  --line-2: #2a4555;
+  --accent: #8ec4e0;
+  --accent-ink: #0b1820;
+  --accent-soft: #132f3d;
+  --good: #82c7a5;
+  --good-soft: #112d24;
+  --bad: #e59d92;
+  --bad-soft: #36201d;
+  --heat-0: #13252f;
+  --heat-1: #1a4055;
+  --heat-2: #2b6787;
+  --heat-3: #5a9dc1;
+  --heat-4: #a8d3e9;
+  --series-1: #8ec4e0;
+  --grid: #172b36;
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --font-problem: 'KaTeX_Main', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
 body {
-  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  background: var(--bg);
+  color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.problem-text .katex { font-size: 1.08em; }
-.katex-display { margin: 0.25em 0; }
-:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+/* Problem statements read like a printed contest booklet, matching KaTeX's math font. */
+.problem-text {
+  font-family: var(--font-problem);
+  font-size: 1.15rem;
+  line-height: 1.65;
+}
+.problem-text .katex {
+  font-size: 1.02em;
+}
+.katex-display {
+  margin: 0.25em 0;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+::selection {
+  background: var(--accent-soft);
+}

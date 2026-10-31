@@ -76,7 +76,7 @@ export function Heatmap({ days }: { days: Record<string, number> }) {
       </div>
       {hover && (
         <div
-          className="pointer-events-none fixed z-50 rounded-md bg-slate-900 px-2 py-1 text-xs text-white shadow dark:bg-slate-100 dark:text-slate-900"
+          className="pointer-events-none fixed z-50 rounded-[3px] border border-line-2 bg-raised px-2 py-1 text-xs text-ink"
           style={{ left: hover.x + 10, top: hover.y - 32 }}
         >
           <strong>{hover.n}</strong> answer{hover.n === 1 ? '' : 's'} · {new Date(hover.day + 'T12:00:00Z').toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}

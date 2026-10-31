@@ -1,19 +1,51 @@
-import { useEffect, useState } from 'react'
-import { Button, Card, ErrorNote } from '../components/ui.tsx'
-import { href, navigate } from '../lib/router.ts'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { AVATAR_COLORS, Avatar, Button, cx, ErrorNote, inputCls, linkCls, Note, PageTitle, Section } from '../components/ui.tsx'
+import { href, navigate, type Route } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
-import { errorMessage, supabase } from '../lib/supabase.ts'
+import { errorMessage, siteUrl, supabase } from '../lib/supabase.ts'
 
-const AVATARS = ['🦊', '🐼', '🦉', '🐙', '🦄', '🐢', '🐧', '🦁', '🐸', '🐝', '🦖', '🐬', '🚀', '🧠', '📐', '🎲', '♾️', '🔺', '⭐', '🌀']
-const input = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-600 dark:bg-slate-800'
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1.5 block text-ink-3">{label}</span>
+      {children}
+    </label>
+  )
+}
+
+function useForm() {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const run = async (e: FormEvent | null, fn: () => Promise<string | void>) => {
+    e?.preventDefault()
+    setBusy(true)
+    setErr(null)
+    setMsg(null)
+    try {
+      const m = await fn()
+      if (m) setMsg(m)
+    } catch (x) {
+      setErr(errorMessage(x))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const status = (
+    <>
+      {err && <ErrorNote>{err}</ErrorNote>}
+      {msg && <p role="status" className="text-sm text-good">{msg}</p>}
+    </>
+  )
+  return { busy, err, run, status }
+}
 
 function ProfileForm() {
   const { profile, refreshProfile } = useStore()
   const [username, setUsername] = useState(profile?.username ?? '')
-  const [avatar, setAvatar] = useState(profile?.avatar ?? '🦊')
+  const [avatar, setAvatar] = useState(profile?.avatar ?? 'glacier')
   const [bio, setBio] = useState(profile?.bio ?? '')
-  const [msg, setMsg] = useState<string | null>(null)
-  const [err, setErr] = useState<string | null>(null)
+  const f = useForm()
   useEffect(() => {
     if (!profile) return
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -22,177 +54,285 @@ function ProfileForm() {
     setBio(profile.bio)
   }, [profile])
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setMsg(null)
-    setErr(null)
-    const { error } = await supabase.rpc('update_profile', { p_username: username.trim(), p_avatar: avatar, p_bio: bio.trim() })
-    if (error) return setErr(errorMessage(error))
-    await refreshProfile()
-    setMsg('Saved.')
-  }
-
   return (
-    <form onSubmit={save} className="space-y-4">
-      <label className="block text-sm">
-        <span className="mb-1 block font-semibold">Username</span>
-        <input className={input} value={username} onChange={(e) => setUsername(e.target.value)} pattern="[A-Za-z0-9_]{3,20}" required
-          title="3-20 letters, digits or underscores" />
-      </label>
+    <form
+      onSubmit={(e) =>
+        f.run(e, async () => {
+          const { error } = await supabase.rpc('update_profile', { p_username: username.trim(), p_avatar: avatar, p_bio: bio.trim() })
+          if (error) throw error
+          await refreshProfile()
+          return 'Saved.'
+        })
+      }
+      className="space-y-5"
+    >
+      <Field label="Username">
+        <input className={inputCls} value={username} onChange={(e) => setUsername(e.target.value)} pattern="[A-Za-z0-9_]{3,20}" required title="3–20 letters, digits or underscores" />
+      </Field>
       <fieldset>
-        <legend className="mb-1 text-sm font-semibold">Avatar</legend>
-        <div className="flex flex-wrap gap-1">
-          {AVATARS.map((a) => (
-            <button key={a} type="button" onClick={() => setAvatar(a)} aria-pressed={avatar === a} aria-label={`Avatar ${a}`}
-              className={`rounded-lg p-1.5 text-2xl ${avatar === a ? 'bg-indigo-100 ring-2 ring-indigo-500 dark:bg-indigo-950' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-              {a}
+        <legend className="mb-1.5 text-sm text-ink-3">Color</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          {Object.keys(AVATAR_COLORS).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setAvatar(c)}
+              aria-pressed={avatar === c}
+              aria-label={c}
+              className={cx('rounded-[3px] p-0.5', avatar === c ? 'ring-2 ring-accent' : 'ring-1 ring-transparent hover:ring-line-2')}
+            >
+              <Avatar name={username || '?'} color={c} size={30} />
             </button>
           ))}
         </div>
       </fieldset>
-      <label className="block text-sm">
-        <span className="mb-1 block font-semibold">Bio</span>
-        <textarea className={input} rows={2} maxLength={280} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Aiming for AIME!" />
-      </label>
-      {err && <ErrorNote>{err}</ErrorNote>}
-      {msg && <p role="status" className="text-sm text-emerald-700 dark:text-emerald-400">{msg}</p>}
-      <Button type="submit">Save profile</Button>
+      <Field label="Bio">
+        <textarea className={cx(inputCls, 'h-auto py-2')} rows={2} maxLength={280} value={bio} onChange={(e) => setBio(e.target.value)} />
+      </Field>
+      {f.status}
+      <Button type="submit" disabled={f.busy}>Save profile</Button>
     </form>
   )
 }
 
-function CredentialsForm({ mode }: { mode: 'upgrade' | 'signin' | 'signup' }) {
-  const { refreshProfile } = useStore()
+/** Not signed in (or a guest choosing to switch): sign in, create an account, or reset a password. */
+function SignInForms({ guest }: { guest: boolean }) {
+  const [tab, setTab] = useState<'signin' | 'signup' | 'forgot'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const [needsConfirm, setNeedsConfirm] = useState(false)
+  const f = useForm()
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setBusy(true)
-    setErr(null)
-    setMsg(null)
-    try {
-      if (mode === 'upgrade') {
-        // Links an email + password to the current guest user; progress carries over.
-        const { error } = await supabase.auth.updateUser({ email, password })
+  const resend = () =>
+    f.run(null, async () => {
+      const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: siteUrl() } })
+      if (error) throw error
+      return 'Sent a new confirmation link. It can take a few minutes; check spam too.'
+    })
+
+  const submit = (e: FormEvent) =>
+    f.run(e, async () => {
+      if (tab === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: siteUrl() })
         if (error) throw error
-        await supabase.auth.refreshSession()
-        setMsg('Account saved! You can now sign in with this email on any device.')
-      } else if (mode === 'signin') {
-        await supabase.auth.signOut()
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        navigate('practice')
-      } else {
-        const { data, error } = await supabase.auth.signUp({ email, password })
-        if (error) throw error
-        setMsg(data.session ? 'Welcome!' : 'Check your email to confirm your account.')
+        return 'If that email has an account, a reset link is on its way.'
       }
-      await refreshProfile()
-    } catch (e2) {
-      setErr(errorMessage(e2))
-    } finally {
-      setBusy(false)
-    }
-  }
+      if (tab === 'signin') {
+        if (guest) await supabase.auth.signOut()
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) {
+          if (/not confirmed/i.test(error.message)) setNeedsConfirm(true)
+          throw error
+        }
+        navigate('practice')
+        return
+      }
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: siteUrl() } })
+      if (error) throw error
+      // Supabase answers an existing address with a user that has no identities (and sends nothing).
+      if (data.user && data.user.identities?.length === 0) {
+        setTab('signin')
+        return 'That email already has an account. Sign in, or use “Forgot password”.'
+      }
+      if (data.session) {
+        navigate('practice')
+        return
+      }
+      setNeedsConfirm(true)
+      return 'Check your email for a confirmation link, then come back here.'
+    })
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <label className="block text-sm">
-        <span className="mb-1 block font-semibold">Email</span>
-        <input className={input} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        <span className="mb-1 block font-semibold">Password</span>
-        <input className={input} type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} minLength={8} required
-          value={password} onChange={(e) => setPassword(e.target.value)} />
-      </label>
-      {err && <ErrorNote>{err}</ErrorNote>}
-      {msg && <p role="status" className="text-sm text-emerald-700 dark:text-emerald-400">{msg}</p>}
-      <Button type="submit" disabled={busy}>
-        {busy ? 'Working…' : mode === 'upgrade' ? 'Save my progress' : mode === 'signin' ? 'Sign in' : 'Create account'}
-      </Button>
+    <div>
+      <div role="tablist" className="mb-6 flex gap-6 border-b border-line">
+        {([['signin', 'Sign in'], ['signup', 'Create account'], ['forgot', 'Forgot password']] as const).map(([t, l]) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={cx('-mb-px border-b-2 pb-2 text-sm', tab === t ? 'border-accent text-ink' : 'border-transparent text-ink-3 hover:text-ink')}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
+      {guest && tab === 'signin' && <div className="mb-4"><Note>Signing in to another account leaves this guest's progress behind.</Note></div>}
+      {guest && tab === 'signup' ? (
+        <p className="text-sm text-ink-2">As a guest, use “Save your progress” above. It turns this guest into a full account.</p>
+      ) : (
+        <form onSubmit={submit} className="max-w-sm space-y-4">
+          <Field label="Email">
+            <input className={inputCls} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
+          {tab !== 'forgot' && (
+            <Field label="Password">
+              <input className={inputCls} type="password" autoComplete={tab === 'signin' ? 'current-password' : 'new-password'} minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
+          )}
+          {f.status}
+          <div className="flex flex-wrap items-center gap-5">
+            <Button type="submit" disabled={f.busy}>{{ signin: 'Sign in', signup: 'Create account', forgot: 'Send reset link' }[tab]}</Button>
+            {needsConfirm && email && (
+              <button type="button" className="text-sm text-ink-2 hover:text-ink" onClick={resend} disabled={f.busy}>
+                Resend confirmation email
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+    </div>
+  )
+}
+
+/** A guest attaches an email (confirmed by link), then sets a password. Progress carries over. */
+function SaveProgressForm() {
+  const [email, setEmail] = useState('')
+  const f = useForm()
+  return (
+    <form
+      onSubmit={(e) =>
+        f.run(e, async () => {
+          const { data, error } = await supabase.auth.updateUser({ email }, { emailRedirectTo: siteUrl() })
+          if (error) throw error
+          if (data.user?.email === email) return 'Email saved. Now set a password below.'
+          return 'Check your email and click the link. You’ll come back here to set a password.'
+        })
+      }
+      className="max-w-sm space-y-4"
+    >
+      <Field label="Email">
+        <input className={inputCls} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      </Field>
+      {f.status}
+      <Button type="submit" disabled={f.busy}>Save my progress</Button>
     </form>
   )
 }
 
-export function AccountPage() {
+function PasswordForm({ label = 'New password', done }: { label?: string; done?: () => void }) {
+  const [password, setPassword] = useState('')
+  const f = useForm()
+  return (
+    <form
+      onSubmit={(e) =>
+        f.run(e, async () => {
+          const { error } = await supabase.auth.updateUser({ password })
+          if (error) throw error
+          setPassword('')
+          done?.()
+          return 'Password updated.'
+        })
+      }
+      className="max-w-sm space-y-4"
+    >
+      <Field label={label}>
+        <input className={inputCls} type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} />
+      </Field>
+      {f.status}
+      <Button type="submit" disabled={f.busy}>Set password</Button>
+    </form>
+  )
+}
+
+function EmailChangeForm({ current }: { current: string }) {
+  const [email, setEmail] = useState('')
+  const f = useForm()
+  return (
+    <form
+      onSubmit={(e) =>
+        f.run(e, async () => {
+          const { error } = await supabase.auth.updateUser({ email }, { emailRedirectTo: siteUrl() })
+          if (error) throw error
+          return `Confirmation links were sent. Your email stays ${current} until the change is confirmed.`
+        })
+      }
+      className="max-w-sm space-y-4"
+    >
+      <Field label="New email">
+        <input className={inputCls} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      </Field>
+      {f.status}
+      <Button type="submit" variant="secondary" disabled={f.busy}>Change email</Button>
+    </form>
+  )
+}
+
+const CALLBACK_MESSAGES: Record<string, string> = {
+  signup: 'Email confirmed. You’re signed in.',
+  email_change: 'Email confirmed.',
+  invite: 'Invitation accepted.',
+  magiclink: 'You’re signed in.',
+  signin: 'You’re signed in.',
+}
+
+export function AccountPage({ route }: { route: Route }) {
   const { session, profile, authReady, ensureUser, refreshProfile } = useStore()
-  const [tab, setTab] = useState<'signin' | 'signup'>('signin')
   const [err, setErr] = useState<string | null>(null)
   const guest = !!session?.user.is_anonymous
+  const auth = route.query.get('auth')
+  const pendingEmail = session?.user.new_email
 
   if (!authReady) return null
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold">Account</h1>
+    <div className="mx-auto max-w-2xl space-y-10">
+      <PageTitle>Account</PageTitle>
+
+      {auth === 'error' && <ErrorNote>{route.query.get('msg') ?? 'That link didn’t work.'} Links expire after an hour and work once.</ErrorNote>}
+      {auth && CALLBACK_MESSAGES[auth] && <p role="status" className="text-good">{CALLBACK_MESSAGES[auth]}</p>}
+
+      {auth === 'recovery' && session && (
+        <Section title="Choose a new password">
+          <PasswordForm done={() => navigate('account')} />
+        </Section>
+      )}
+
       {session && profile && (
-        <Card>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-bold">Profile</h2>
-            <a className="text-sm text-indigo-600 hover:underline dark:text-indigo-400" href={href(`u/${profile.username}`)}>View public profile →</a>
-          </div>
+        <Section title="Profile" aside={<a className={cx('text-sm', linkCls)} href={href(`u/${profile.username}`)}>Public profile</a>}>
           <ProfileForm />
-        </Card>
+        </Section>
       )}
 
       {guest && (
-        <Card>
-          <h2 className="font-bold">💾 Save your progress</h2>
-          <p className="mt-1 mb-4 text-sm text-slate-600 dark:text-slate-400">
-            You're playing as a guest. Your progress lives in this browser only. Add an email and password to keep it and sign in anywhere.
-          </p>
-          <CredentialsForm mode="upgrade" />
-        </Card>
-      )}
-
-      {(!session || guest) && (
-        <Card>
-          <div role="tablist" className="mb-4 flex gap-2">
-            {(['signin', 'signup'] as const).map((t) => (
-              <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-                className={`rounded-md px-3 py-1 text-sm font-semibold ${tab === t ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-                {t === 'signin' ? 'Sign in' : 'New account'}
-              </button>
-            ))}
-          </div>
-          {guest && tab === 'signin' && (
-            <p className="mb-3 text-sm text-amber-700 dark:text-amber-400">Signing in to another account leaves this guest's progress behind.</p>
-          )}
-          {guest && tab === 'signup' ? (
-            <p className="text-sm text-slate-600 dark:text-slate-400">As a guest, use “Save your progress” above instead. It turns this guest into a full account.</p>
-          ) : (
-            <CredentialsForm key={tab} mode={tab} />
-          )}
-          {!session && (
-            <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
-              <Button variant="secondary" onClick={() => ensureUser().then(refreshProfile).then(() => navigate('practice')).catch((e) => setErr(errorMessage(e)))}>
-                Just play as a guest
-              </Button>
-              {err && <div className="mt-2"><ErrorNote>{err}</ErrorNote></div>}
-            </div>
-          )}
-        </Card>
+        <Section title="Save your progress">
+          <p className="mb-5 text-sm text-ink-2">Right now your progress lives in this browser. Add an email to keep it and sign in anywhere.</p>
+          {pendingEmail && <div className="mb-4"><Note>Waiting for you to confirm {pendingEmail}. Check your inbox and spam.</Note></div>}
+          <SaveProgressForm />
+        </Section>
       )}
 
       {session && !guest && (
-        <Card>
-          <h2 className="font-bold">Signed in</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{session.user.email}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <Section title="Sign-in details">
+          <p className="mb-5 text-sm text-ink-2">
+            Signed in as <span className="text-ink">{session.user.email}</span>
+            {pendingEmail && <> · change to {pendingEmail} waiting for confirmation</>}
+          </p>
+          <div className="space-y-8">
+            {auth === 'email_change' || auth === 'signup' ? <PasswordForm label="Set a password" /> : <PasswordForm label="Change password" />}
+            <EmailChangeForm current={session.user.email ?? ''} />
             <Button variant="secondary" onClick={() => supabase.auth.signOut().then(() => navigate('practice'))}>Sign out</Button>
           </div>
-        </Card>
+        </Section>
+      )}
+
+      {(!session || guest) && (
+        <Section title={guest ? 'Use an existing account' : undefined} className={!session ? 'border-t-0 pt-0' : undefined}>
+          <SignInForms guest={guest} />
+          {!session && (
+            <div className="mt-8 border-t border-line pt-6">
+              <Button variant="secondary" onClick={() => ensureUser().then(refreshProfile).then(() => navigate('practice')).catch((e) => setErr(errorMessage(e)))}>
+                Play as a guest
+              </Button>
+              {err && <div className="mt-3"><ErrorNote>{err}</ErrorNote></div>}
+            </div>
+          )}
+        </Section>
       )}
 
       {session && (
-        <Card>
-          <h2 className="font-bold text-rose-700 dark:text-rose-400">Delete account</h2>
-          <p className="mt-1 mb-3 text-sm text-slate-600 dark:text-slate-400">Permanently deletes your profile, answers, badges and challenges.</p>
+        <Section title="Delete account">
+          <p className="mb-4 text-sm text-ink-2">Permanently deletes your profile, answers, badges and challenges.</p>
           <Button
             variant="danger"
             onClick={async () => {
@@ -205,8 +345,8 @@ export function AccountPage() {
           >
             Delete my account
           </Button>
-          {err && <div className="mt-2"><ErrorNote>{err}</ErrorNote></div>}
-        </Card>
+          {err && <div className="mt-3"><ErrorNote>{err}</ErrorNote></div>}
+        </Section>
       )}
     </div>
   )

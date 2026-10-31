@@ -22,7 +22,7 @@ export const TOPICS = {
     },
   },
   number_theory: {
-    label: 'Number Theory',
+    label: 'Number theory',
     subs: {
       divisibility: 'Divisibility',
       modular: 'Modular arithmetic',
@@ -31,7 +31,7 @@ export const TOPICS = {
     },
   },
   counting: {
-    label: 'Counting & Probability',
+    label: 'Counting & probability',
     subs: {
       combinatorics: 'Combinatorics',
       expected_value: 'Expected value',

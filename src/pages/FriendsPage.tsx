@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, cx, Spinner } from '../components/ui.tsx'
+import { Avatar, cx, inputCls, linkCls, PageTitle, Section, Spinner } from '../components/ui.tsx'
 import { href, type Route } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
 import { supabase } from '../lib/supabase.ts'
@@ -18,17 +18,17 @@ const COLS = 'id,username,avatar,rating,solved_count,current_streak,last_active_
 
 function PeopleList({ people, empty }: { people: Mini[] | null; empty: string }) {
   if (!people) return <Spinner />
-  if (!people.length) return <p className="py-3 text-sm text-slate-500">{empty}</p>
+  if (!people.length) return <p className="py-3 text-sm text-ink-3">{empty}</p>
   return (
-    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+    <ul className="divide-y divide-line">
       {people.map((p) => (
-        <li key={p.id} className="flex items-center justify-between gap-3 py-2">
-          <a href={href(`u/${p.username}`)} className="flex items-center gap-2 font-semibold hover:underline">
-            <span aria-hidden className="text-xl">{p.avatar}</span>
+        <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
+          <a href={href(`u/${p.username}`)} className="flex items-center gap-2.5 hover:underline">
+            <Avatar name={p.username} color={p.avatar} size={24} />
             {p.username}
           </a>
-          <span className="text-sm tabular-nums text-slate-600 dark:text-slate-400">
-            {Math.round(p.rating)} · {p.solved_count} solved · 🔥{liveStreak(p.current_streak, p.last_active_day)}
+          <span className="text-sm tabular-nums text-ink-3">
+            {Math.round(p.rating)} · {p.solved_count} solved · streak {liveStreak(p.current_streak, p.last_active_day)}
           </span>
         </li>
       ))}
@@ -77,38 +77,29 @@ export function FriendsPage({ route }: { route: Route }) {
   const mine = !route.query.get('u') || route.query.get('u') === profile?.username
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-2xl font-bold">👥 Friends</h1>
-      <Card>
-        <label className="block text-sm font-semibold" htmlFor="user-search">Find players</label>
-        <input
-          id="user-search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by username"
-          className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-600 dark:bg-slate-800"
-        />
-        {results && q.trim().length >= 2 && <div className="mt-2"><PeopleList people={results} empty="No players found." /></div>}
-      </Card>
-      <Card>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-bold">{mine ? 'You' : target}</h2>
-          <div role="tablist" className="flex gap-1">
-            {(['following', 'followers'] as const).map((t) => (
-              <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-                className={cx('rounded-md px-3 py-1 text-sm font-semibold', tab === t ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800')}>
-                {t === 'following' ? 'Following' : 'Followers'}
-              </button>
-            ))}
-          </div>
+    <div className="mx-auto max-w-3xl space-y-10">
+      <PageTitle>Friends</PageTitle>
+      <section>
+        <label className="block text-sm text-ink-3" htmlFor="user-search">Find players</label>
+        <input id="user-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Username" className={cx(inputCls, 'mt-1.5 max-w-sm')} />
+        {results && q.trim().length >= 2 && <div className="mt-3"><PeopleList people={results} empty="No players found." /></div>}
+      </section>
+      <Section title={mine ? undefined : target}>
+        <div role="tablist" className="mb-4 flex gap-6 border-b border-line">
+          {(['following', 'followers'] as const).map((t) => (
+            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
+              className={cx('-mb-px border-b-2 pb-2 text-sm', tab === t ? 'border-accent text-ink' : 'border-transparent text-ink-3 hover:text-ink')}>
+              {t === 'following' ? 'Following' : 'Followers'}
+            </button>
+          ))}
         </div>
         {!session && mine ? (
-          <p className="py-3 text-sm text-slate-500">Answer a problem or <a className="underline" href={href('account')}>sign in</a> to follow friends.</p>
+          <p className="py-3 text-sm text-ink-3">Answer a problem or <a className={linkCls} href={href('account')}>sign in</a> to follow players.</p>
         ) : (
-          <PeopleList people={list} empty={tab === 'following' ? 'Not following anyone yet. Search above, then hit Follow on their profile.' : 'No followers yet. Share a challenge!'} />
+          <PeopleList people={list} empty={tab === 'following' ? 'Not following anyone yet. Find a player above and follow them from their profile.' : 'No followers yet.'} />
         )}
-        {mine && session && <div className="mt-3"><Button variant="secondary" onClick={() => (location.hash = href('challenges'))}>Challenge your friends →</Button></div>}
-      </Card>
+        {mine && session && <p className="mt-4 text-sm"><a className={linkCls} href={href('challenges')}>Challenge your friends</a></p>}
+      </Section>
     </div>
   )
 }

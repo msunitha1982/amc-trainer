@@ -26,7 +26,7 @@ export function RatingChart({ points }: { points: [number, number][] }) {
     }
   }, [data, pad.l, pad.r, pad.t, pad.b])
 
-  if (data.length === 0) return <p className="text-sm text-slate-500">No rated answers yet.</p>
+  if (data.length === 0) return <p className="text-sm text-ink-3">No rated answers yet.</p>
 
   const path = data.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(d.r).toFixed(1)}`).join('')
   const onMove = (e: React.PointerEvent) => {
@@ -67,7 +67,7 @@ export function RatingChart({ points }: { points: [number, number][] }) {
       </svg>
       {h && hover !== null && (
         <div
-          className="pointer-events-none absolute top-0 rounded-md bg-slate-900 px-2 py-1 text-xs text-white shadow dark:bg-slate-100 dark:text-slate-900"
+          className="pointer-events-none absolute top-0 rounded-[3px] border border-line-2 bg-raised px-2 py-1 text-xs text-ink"
           style={{ left: `${(x(hover) / W) * 100}%`, transform: x(hover) > W * 0.7 ? 'translateX(-105%)' : 'translateX(8px)' }}
         >
           <strong className="tabular-nums">{Math.round(h.r)}</strong> · {fmt(h.t)} · answer #{hover + 1}

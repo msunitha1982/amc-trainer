@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Heatmap } from '../components/charts/Heatmap.tsx'
 import { RatingChart } from '../components/charts/RatingChart.tsx'
-import { Button, Card, cx, ErrorNote, Spinner, Stat } from '../components/ui.tsx'
+import { Avatar, Button, cx, ErrorNote, linkCls, Section, Spinner, Stat } from '../components/ui.tsx'
 import { BANDS } from '../lib/rating.ts'
 import { href, navigate } from '../lib/router.ts'
 import { useStore } from '../lib/store.tsx'
@@ -74,7 +74,7 @@ export function ProfilePage({ username }: { username: string }) {
 
   if (error) return <ErrorNote>{error}</ErrorNote>
   if (p === undefined) return <Spinner label="Loading profile" />
-  if (p === null) return <Card>No player named “{username}”.</Card>
+  if (p === null) return <p className="text-ink-2">No player named “{username}”.</p>
 
   const isMe = me === p.id
   const byTopic = new Map(topics.map((t) => [t.topic, t]))
@@ -93,137 +93,121 @@ export function ProfilePage({ username }: { username: string }) {
   const tMax = Math.max(1800, ...topics.map((t) => t.rating))
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <Card>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 text-4xl dark:bg-indigo-950" aria-hidden>
-            {p.avatar}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold">
-              {p.username}
-              {p.is_guest && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-normal text-slate-600 dark:bg-slate-800 dark:text-slate-300">guest</span>}
-            </h1>
-            {p.bio && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{p.bio}</p>}
-            <p className="mt-1 text-xs text-slate-500">
-              <a className="hover:underline" href={href(`friends?u=${p.username}&tab=followers`)}>{follow.followers} followers</a> ·{' '}
-              <a className="hover:underline" href={href(`friends?u=${p.username}&tab=following`)}>{follow.following} following</a> · joined{' '}
-              {new Date(p.created_at).toLocaleDateString('en', { month: 'short', year: 'numeric' })}
-            </p>
-          </div>
-          {isMe ? (
-            <Button variant="secondary" onClick={() => navigate('account')}>Edit profile</Button>
-          ) : (
-            <Button variant={follow.iFollow ? 'secondary' : 'primary'} onClick={toggleFollow}>{follow.iFollow ? 'Following ✓' : 'Follow'}</Button>
-          )}
+    <div className="mx-auto max-w-3xl space-y-10">
+      <header className="flex flex-wrap items-start gap-5">
+        <Avatar name={p.username} color={p.avatar} size={56} />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {p.username}
+            {p.is_guest && <span className="ml-2 align-middle text-sm font-normal text-ink-3">guest</span>}
+          </h1>
+          {p.bio && <p className="mt-1 text-ink-2">{p.bio}</p>}
+          <p className="mt-1 text-sm text-ink-3">
+            <a className="hover:text-ink" href={href(`friends?u=${p.username}&tab=followers`)}>{follow.followers} followers</a> ·{' '}
+            <a className="hover:text-ink" href={href(`friends?u=${p.username}&tab=following`)}>{follow.following} following</a> · joined{' '}
+            {new Date(p.created_at).toLocaleDateString('en', { month: 'short', year: 'numeric' })}
+          </p>
         </div>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <Stat label="Rating" value={Math.round(p.rating)} hint={`Peak ${Math.round(p.peak_rating)}; uncertainty ±${Math.round(p.rating_rd)}`} />
-          <Stat label="Solved" value={p.solved_count} hint={`${p.attempted_count} rated attempts`} />
-          <Stat label="Accuracy" value={p.attempted_count ? `${Math.round((100 * p.solved_count) / p.attempted_count)}%` : '—'} />
-          <Stat label="Streak 🔥" value={liveStreak(p.current_streak, p.last_active_day)} hint={`Longest ${p.longest_streak}`} />
-          <Stat label="Daily ☀️" value={liveStreak(p.daily_streak, p.last_daily_day)} hint={`Longest ${p.daily_longest}`} />
-        </div>
-        <p className="mt-2 text-xs text-slate-500">Longest streak {p.longest_streak} days · longest daily streak {p.daily_longest} · peak rating {Math.round(p.peak_rating)}</p>
-      </Card>
+        {isMe ? (
+          <Button variant="secondary" onClick={() => navigate('account')}>Edit profile</Button>
+        ) : (
+          <Button variant={follow.iFollow ? 'secondary' : 'primary'} onClick={toggleFollow}>{follow.iFollow ? 'Following' : 'Follow'}</Button>
+        )}
+      </header>
 
-      <Card>
-        <h2 className="mb-3 font-bold">Activity</h2>
+      <div className="grid grid-cols-3 gap-6 sm:grid-cols-6">
+        <Stat label="Rating" value={Math.round(p.rating)} hint={`Uncertainty ±${Math.round(p.rating_rd)}`} />
+        <Stat label="Peak" value={Math.round(p.peak_rating)} />
+        <Stat label="Solved" value={p.solved_count} hint={`${p.attempted_count} rated attempts`} />
+        <Stat label="Accuracy" value={p.attempted_count ? `${Math.round((100 * p.solved_count) / p.attempted_count)}%` : '–'} />
+        <Stat label="Streak" value={liveStreak(p.current_streak, p.last_active_day)} hint={`Longest ${p.longest_streak}`} />
+        <Stat label="Daily streak" value={liveStreak(p.daily_streak, p.last_daily_day)} hint={`Longest ${p.daily_longest}`} />
+      </div>
+      {error && <ErrorNote>{error}</ErrorNote>}
+
+      <Section title="Activity" aside={<span className="text-sm text-ink-3">Longest streak {p.longest_streak} days</span>}>
         <Heatmap days={activity} />
-      </Card>
+      </Section>
 
-      <Card>
-        <h2 className="mb-3 font-bold">Rating over time</h2>
+      <Section title="Rating">
         {history === null ? <Spinner /> : <RatingChart points={history} />}
-      </Card>
+      </Section>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="font-bold">Topic ratings</h2>
-            {isMe && weakest && (
-              <Button variant="secondary" className="!px-3 !py-1 text-xs" onClick={() => navigate(`practice?topic=${weakest}`)}>
-                Practice weakest: {TOPICS[weakest].label} →
-              </Button>
-            )}
-          </div>
-          <ul className="space-y-3">
+      <div className="grid gap-10 md:grid-cols-2">
+        <Section
+          title="Topics"
+          aside={
+            isMe && weakest ? (
+              <a className={cx('text-sm', linkCls)} href={href(`practice?topic=${weakest}`)}>
+                Practice {TOPICS[weakest].label.toLowerCase()}
+              </a>
+            ) : undefined
+          }
+        >
+          <ul className="space-y-4">
             {MAJOR_TOPICS.map((m) => {
               const t = byTopic.get(m)
               const r = t?.attempts ? t.rating : null
               return (
                 <li key={m}>
                   <div className="flex justify-between text-sm">
-                    <span>{TOPICS[m].label}</span>
-                    <span className="tabular-nums font-semibold" title={t ? `${t.solves}/${t.attempts} solved` : undefined}>
-                      {r === null ? '—' : Math.round(r)}
-                      {t?.attempts ? <span className="ml-1 font-normal text-slate-500">({t.solves}/{t.attempts})</span> : null}
+                    <span className={cx(m === weakest && rated.length > 1 && 'font-medium')}>
+                      {TOPICS[m].label}
+                      {m === weakest && rated.length > 1 && <span className="ml-2 font-normal text-ink-3">weakest</span>}
+                    </span>
+                    <span className="tabular-nums" title={t ? `${t.solves}/${t.attempts} solved` : undefined}>
+                      {r === null ? <span className="text-ink-3">–</span> : Math.round(r)}
                     </span>
                   </div>
-                  <div className="mt-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="mt-1.5 h-1 bg-line">
                     {r !== null && (
-                      <div
-                        className={cx('h-2 rounded-full', m === weakest && rated.length > 1 ? 'bg-amber-500' : 'bg-[var(--series-1)]')}
-                        style={{ width: `${Math.max(4, Math.min(100, ((r - 600) / (tMax - 600)) * 100))}%` }}
-                      />
+                      <div className="h-1 bg-[var(--series-1)]" style={{ width: `${Math.max(3, Math.min(100, ((r - 600) / (tMax - 600)) * 100))}%` }} />
                     )}
                   </div>
                 </li>
               )
             })}
           </ul>
-          {!rated.length && <p className="mt-3 text-xs text-slate-500">Topic ratings appear after rated answers.</p>}
-        </Card>
+          {!rated.length && <p className="mt-4 text-sm text-ink-3">Topic ratings appear after rated answers.</p>}
+        </Section>
 
-        <Card>
-          <h2 className="mb-3 font-bold">Solved by difficulty</h2>
+        <Section title="Solved">
           <table className="w-full text-sm">
             <tbody>
-              {BANDS.map((b) => {
-                const [s, a] = stats?.bands?.[b.id] ?? [0, 0]
+              {[
+                ...BANDS.map((b) => [b.label, stats?.bands?.[b.id]] as const),
+                ...(['10', '12'] as const).map((c) => [`AMC ${c}`, stats?.contests?.[c]] as const),
+              ].map(([label, v], i) => {
+                const [s, a] = v ?? [0, 0]
                 return (
-                  <tr key={b.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                    <th scope="row" className="py-1.5 text-left font-normal">{b.label}</th>
-                    <td className="py-1.5 text-right tabular-nums">{s} / {a}</td>
-                    <td className="w-14 py-1.5 text-right tabular-nums text-slate-500">{a ? `${Math.round((100 * s) / a)}%` : ''}</td>
-                  </tr>
-                )
-              })}
-              {(['10', '12'] as const).map((c) => {
-                const [s, a] = stats?.contests?.[c] ?? [0, 0]
-                return (
-                  <tr key={c} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                    <th scope="row" className="py-1.5 text-left font-normal">AMC {c} problems</th>
-                    <td className="py-1.5 text-right tabular-nums">{s} / {a}</td>
-                    <td className="w-14 py-1.5 text-right tabular-nums text-slate-500">{a ? `${Math.round((100 * s) / a)}%` : ''}</td>
+                  <tr key={label} className={cx('border-line', i > 0 && 'border-t', i === 4 && 'border-t-line-2')}>
+                    <th scope="row" className="py-2 text-left font-normal text-ink-2">{label}</th>
+                    <td className="py-2 text-right tabular-nums">{s} / {a}</td>
+                    <td className="w-14 py-2 text-right tabular-nums text-ink-3">{a ? `${Math.round((100 * s) / a)}%` : ''}</td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-        </Card>
+        </Section>
       </div>
 
-      <Card>
-        <h2 className="mb-3 font-bold">Badges <span className="font-normal text-slate-500">({Object.keys(earned).length}/{badges.length})</span></h2>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+      <Section title="Badges" aside={<span className="text-sm text-ink-3">{Object.keys(earned).length} of {badges.length}</span>}>
+        <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           {badges.map((b) => {
             const at = earned[b.id]
             return (
-              <li
-                key={b.id}
-                className={cx('rounded-xl border p-3 text-center', at ? 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950' : 'border-slate-200 opacity-50 grayscale dark:border-slate-800')}
-                title={at ? `Earned ${new Date(at).toLocaleDateString()}` : 'Not earned yet'}
-              >
-                <div className="text-3xl" aria-hidden>{b.icon}</div>
-                <div className="mt-1 text-sm font-semibold">{b.name}</div>
-                <div className="text-xs text-slate-600 dark:text-slate-400">{b.description}</div>
-                <span className="sr-only">{at ? 'earned' : 'locked'}</span>
+              <li key={b.id} className={cx('flex gap-3', !at && 'opacity-45')} title={at ? `Earned ${new Date(at).toLocaleDateString()}` : 'Not earned yet'}>
+                <span aria-hidden className={cx('mt-1.5 h-2.5 w-2.5 shrink-0 rotate-45', at ? 'bg-accent' : 'border border-line-2')} />
+                <div>
+                  <div className="text-sm font-medium">{b.name}</div>
+                  <div className="text-sm text-ink-3">{b.description}{at ? '' : ' · locked'}</div>
+                </div>
               </li>
             )
           })}
         </ul>
-      </Card>
+      </Section>
     </div>
   )
 }

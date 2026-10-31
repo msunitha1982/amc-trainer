@@ -32,7 +32,7 @@ export const SegmentsView = memo(function SegmentsView({ segments }: { segments:
   let para: ReactNode[] = []
   let key = 0
   const flush = () => {
-    if (para.length) blocks.push(<p key={key++} className="my-3 leading-relaxed">{para}</p>)
+    if (para.length) blocks.push(<p key={key++} className="my-3">{para}</p>)
     para = []
   }
   for (const s of segments) {
@@ -56,14 +56,14 @@ export const SegmentsView = memo(function SegmentsView({ segments }: { segments:
     } else {
       flush()
       blocks.push(
-        <figure key={key++} className="my-4 flex justify-center">
+        <figure key={key++} className="my-5 flex justify-center">
           <img
             src={assetUrl(s.src)}
             alt={s.alt && s.alt !== 'diagram' ? s.alt : 'Problem diagram'}
             width={s.w}
             height={s.h}
             loading="lazy"
-            className="max-w-full h-auto rounded bg-white p-1"
+            className="h-auto max-w-full rounded-[2px] bg-white p-2 dark:opacity-90"
           />
         </figure>,
       )
