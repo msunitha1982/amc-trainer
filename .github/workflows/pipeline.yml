@@ -1,0 +1,73 @@
+name: Re-run data pipeline
+
+# Re-fetches AoPS Wiki pages (via the Wayback Machine when the wiki API is blocked), re-parses,
+# rebuilds public/data and docs/DATA_REPORT.md, and pushes the result to a branch for review.
+# If the optional SUPABASE_DB_URL secret is set, it also upserts problems and answers into the DB.
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: First contest year
+        default: '2000'
+      to:
+        description: Last contest year
+        default: '2025'
+      refresh:
+        description: Ignore the page cache and re-download everything
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Restore page cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: aops-pages-${{ github.run_id }}
+          restore-keys: aops-pages-
+      - name: Fetch pages
+        run: npx tsx scripts/fetch.ts --from ${{ inputs.from }} --to ${{ inputs.to }} ${{ inputs.refresh && '--refresh' || '' }}
+      - name: Parse
+        run: npx tsx scripts/parse.ts
+      - name: Download diagrams
+        run: npx tsx scripts/diagrams.ts
+      - name: Build data files and report
+        run: npx tsx scripts/build-data.ts
+      - name: Sanity-check (tests + build)
+        run: npm test && npx vite build
+      - name: Apply problems and answers to Supabase (optional)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        if: env.SUPABASE_DB_URL != ''
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/problems.sql
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/answers.sql
+      - name: Push results to a branch and open a PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -f supabase/seed/answers.sql   # never commit answers
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          branch="data-refresh-${{ github.run_number }}"
+          git checkout -b "$branch"
+          git add public/data public/diagrams data/diagrams.json docs/DATA_REPORT.md supabase/seed/problems.sql
+          if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
+          git commit -m "Data refresh (run ${{ github.run_number }})"
+          git push origin "$branch"
+          gh pr create --title "Data refresh (run ${{ github.run_number }})" \
+            --body "Automated pipeline run. See docs/DATA_REPORT.md. New problems need topic tags in data/topics.json." \
+            || echo "::warning::Could not open a PR (enable 'Allow GitHub Actions to create pull requests'); branch $branch was pushed."

@@ -1,0 +1,25 @@
+name: Keep Supabase awake
+
+# Free-tier Supabase projects pause after a week without traffic. One tiny request a day prevents it.
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the ping RPC
+        env:
+          # Public, browser-safe values (also in src/config.ts). Override with repo variables if you move projects.
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://utbollibgwaroqnynial.supabase.co' }}
+          SUPABASE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_EbdxGkDuuej_SUG19ETQzg_n9eb0TF7' }}
+        run: |
+          body=$(curl -sS --fail-with-body -X POST "$SUPABASE_URL/rest/v1/rpc/ping" \
+            -H "apikey: $SUPABASE_KEY" -H "Content-Type: application/json" -d '{}')
+          echo "response: $body"
+          test "$body" = '"ok"'
