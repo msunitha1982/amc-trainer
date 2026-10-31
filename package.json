@@ -1,0 +1,44 @@
+{
+  "name": "amc-trainer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "pipeline:fetch": "tsx scripts/fetch.ts",
+    "pipeline:parse": "tsx scripts/parse.ts",
+    "pipeline:build": "tsx scripts/build-data.ts",
+    "pipeline": "npm run pipeline:fetch && npm run pipeline:parse && npm run pipeline:build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "katex": "^0.19.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "node-html-parser": "^9.0.6",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

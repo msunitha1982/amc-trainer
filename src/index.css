@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode, toggled on <html> (see index.html and Layout's ThemeToggle). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Chart tokens: one sequential blue ramp for the heatmap and one series color, each with its
+   own dark-mode steps (validated with the dataviz palette validator). */
+:root {
+  --surface: #ffffff;
+  --text-muted: #64748b;
+  --grid: #e2e8f0;
+  --series-1: #2a78d6;
+  --heat-0: #ebedf0;
+  --heat-1: #b7d3f6;
+  --heat-2: #6da7ec;
+  --heat-3: #2a78d6;
+  --heat-4: #184f95;
+}
+:root.dark {
+  --surface: #0f172a;
+  --text-muted: #94a3b8;
+  --grid: #1e293b;
+  --series-1: #3987e5;
+  --heat-0: #1e293b;
+  --heat-1: #104281;
+  --heat-2: #1c5cab;
+  --heat-3: #3987e5;
+  --heat-4: #86b6ef;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.problem-text .katex { font-size: 1.08em; }
+.katex-display { margin: 0.25em 0; }
+:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
