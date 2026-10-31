@@ -24,6 +24,9 @@ export const KATEX_MACROS: Record<string, string> = {
   '\\textless': '<',
   '\\textgreater': '>',
   '\\ensuremath': '#1',
+  '\\mathdollar': '\\$',
+  '\\cent': '\\text{¢}',
+  '\\hdots': '\\dots',
 }
 
 export const katexOptions = (displayMode: boolean): KatexOptions => ({
@@ -41,5 +44,11 @@ export function normalizeLatex(src: string): string {
     .replace(/\\(?:vspace|vskip)\*?\s*\{[^}]*\}/g, '')
     .replace(/\\(?:noindent|par|centering|medskip|bigskip|smallskip|newpage|indent)\b/g, ' ')
     .replace(/\\(?:allowbreak)\b/g, ' ')
+    // A bare $ inside math is a dollar sign (AoPS renders it literally); KaTeX needs \$.
+    .replace(/(^|[^\\])\$/g, '$1\\$')
+    .replace(/\\(begin|end)\{tabular\}/g, '\\$1{array}')
+    .replace(/\\begin\{eqnarray\*?\}/g, '\\begin{array}{rcl}')
+    .replace(/\\end\{eqnarray\*?\}/g, '\\end{array}')
+    .replace(/\\begin\{array\}\s*\[[tbc]\]/g, '\\begin{array}')
     .trim()
 }

@@ -1,0 +1,8 @@
+{
+  "_note": "Manual corrections from the topic spot-check (see docs/DATA_REPORT.md). These override classifier output.",
+  "2003-10A-20": ["number_theory.bases", "counting.casework"],
+  "2017-10B-14": ["number_theory.modular", "counting.combinatorics"],
+  "2017-10B-20": ["number_theory.divisibility", "number_theory.primes", "counting.combinatorics"],
+  "2021-12A-6": ["algebra.systems", "counting.combinatorics"],
+  "2008-10A-2": ["geometry.triangles", "algebra.systems"]
+}

@@ -266,12 +266,12 @@ function main() {
   const dir = join(ROOT, 'data', 'classify')
   rmSync(dir, { recursive: true, force: true })
   mkdirSync(dir, { recursive: true })
-  const BATCH = 110
+  const BATCH = 100
   for (let i = 0; i * BATCH < records.length; i++) {
     const batch = records.slice(i * BATCH, (i + 1) * BATCH).map((r) => ({
       id: r.id,
-      problem: segmentsToPlainText(r.full).slice(0, 1800),
-      solutions: r.solutionText.slice(0, 1500),
+      problem: segmentsToPlainText(r.full).slice(0, 1400),
+      solutions: r.solutionText.slice(0, 900),
     }))
     writeFileSync(join(dir, `batch-${String(i).padStart(2, '0')}.json`), JSON.stringify(batch, null, 1))
   }

@@ -222,6 +222,14 @@ ${excluded.length ? `<details><summary>All excluded records</summary>\n\n${exclu
 
 ${[...majors].sort((a, b) => b[1] - a[1]).map(([k, v]) => `- ${k}: ${v}`).join('\n') || '- (not classified yet)'}
 
+## Topic tagging
+
+Tags come from Claude reading each problem with excerpts of its wiki solutions, in 22 batches of 100 (guide: \`docs/CLASSIFY.md\`).
+${(() => {
+  const sc = read<Record<string, string> | null>(join(ROOT, 'data', 'topic-spotcheck.json'), null)
+  return sc ? `**Spot-check (${sc.date}):** ${sc.method}\n\n${sc.result} ${sc.fixes}` : ''
+})()}
+
 ## Source and coverage notes
 
 - **Source.** The AoPS Wiki's MediaWiki API (and every other wiki URL) returns a Cloudflare bot challenge (HTTP 403) to scripts. We don't try to bypass it. \`scripts/fetch.ts\` probes the API once per run and otherwise reads the Internet Archive's Wayback Machine copies of the same pages. The content is CC BY-SA. Diagrams come from AoPS's image server (\`latex.artofproblemsolving.com\`), which isn't blocked, or else from Wayback.

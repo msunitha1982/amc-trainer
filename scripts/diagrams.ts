@@ -12,14 +12,15 @@ const ROOT = join(import.meta.dirname, '..')
 const OUT = join(ROOT, 'public', 'diagrams')
 const MANIFEST = join(ROOT, 'data', 'diagrams.json')
 const UA = 'AMCTrainerDataPipeline/1.0 (+https://github.com/msunitha1982/amc-trainer)'
-const INTERVAL = 400
+const INTERVAL = 150
+const WORKERS = 4
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 async function getImage(url: string): Promise<{ buf: Buffer; ext: string } | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': UA } })
+      const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(20_000) })
       const type = res.headers.get('content-type') ?? ''
       if (res.ok && type.startsWith('image/')) {
         const ext = type.includes('svg') ? 'svg' : type.includes('gif') ? 'gif' : type.includes('jpeg') ? 'jpg' : 'png'
@@ -43,26 +44,33 @@ async function main() {
   const manifest: Record<string, string | null> = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
   let fetched = 0
   let failed = 0
-  for (const url of urls) {
-    if (manifest[url] && existsSync(join(ROOT, 'public', manifest[url]!))) continue
-    const name = createHash('sha1').update(url).digest('hex').slice(0, 16)
-    let img = await getImage(url)
-    await sleep(INTERVAL)
-    if (!img) {
-      img = await getImage(`https://web.archive.org/web/2026im_/${url}`)
-      await sleep(INTERVAL)
+  const todo = [...urls].filter((url) => !(manifest[url] && existsSync(join(ROOT, 'public', manifest[url]!))))
+  let next = 0
+  let lastStart = 0
+  const worker = async () => {
+    while (next < todo.length) {
+      const url = todo[next++]
+      const wait = lastStart + INTERVAL - Date.now()
+      lastStart = Math.max(Date.now(), lastStart + INTERVAL)
+      if (wait > 0) await sleep(wait)
+      const name = createHash('sha1').update(url).digest('hex').slice(0, 16)
+      // The wiki's upload host sits behind the same Cloudflare wall as the wiki, so use its archived copy.
+      const direct = !/wiki-images\.artofproblemsolving\.com|^https:\/\/artofproblemsolving\.com/.test(url)
+      let img = direct ? await getImage(url) : null
+      if (!img) img = await getImage(`https://web.archive.org/web/2026im_/${url}`)
+      if (!img) {
+        manifest[url] = null
+        failed++
+        console.warn(`  unavailable: ${url}`)
+        continue
+      }
+      const rel = `diagrams/${name}.${img.ext}`
+      writeFileSync(join(ROOT, 'public', rel), img.buf)
+      manifest[url] = rel
+      if (++fetched % 100 === 0) console.log(`  ${fetched}/${todo.length}`)
     }
-    if (!img) {
-      manifest[url] = null
-      failed++
-      console.warn(`  unavailable: ${url}`)
-      continue
-    }
-    const rel = `diagrams/${name}.${img.ext}`
-    writeFileSync(join(ROOT, 'public', rel), img.buf)
-    manifest[url] = rel
-    fetched++
   }
+  await Promise.all(Array.from({ length: WORKERS }, worker))
   writeFileSync(MANIFEST, JSON.stringify(manifest, null, 1))
   console.log(`diagrams: ${urls.size} referenced, ${fetched} downloaded now, ${failed} unavailable`)
 }

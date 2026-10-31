@@ -1,0 +1,343 @@
+{
+"2016-12B-2": [
+"algebra.systems"
+],
+"2016-12B-3": [
+"algebra.functions"
+],
+"2016-12B-5": [
+"number_theory.modular"
+],
+"2016-12B-7": [
+"algebra.sequences",
+"number_theory.divisibility"
+],
+"2016-12B-9": [
+"algebra.systems"
+],
+"2016-12B-10": [
+"geometry.coordinate",
+"geometry.triangles"
+],
+"2016-12B-13": [
+"geometry.triangles",
+"geometry.coordinate"
+],
+"2016-12B-17": [
+"geometry.triangles"
+],
+"2016-12B-19": [
+"algebra.sequences",
+"counting.combinatorics"
+],
+"2016-12B-21": [
+"algebra.sequences",
+"geometry.triangles"
+],
+"2016-12B-22": [
+"number_theory.divisibility",
+"number_theory.modular"
+],
+"2016-12B-23": [
+"geometry.solid"
+],
+"2016-12B-24": [
+"number_theory.divisibility",
+"number_theory.primes"
+],
+"2016-12B-25": [
+"algebra.sequences",
+"algebra.logs"
+],
+"2017-10A-1": [
+"algebra.sequences"
+],
+"2017-10A-2": [
+"algebra.systems"
+],
+"2017-10A-3": [
+"geometry.triangles"
+],
+"2017-10A-4": [
+"algebra.systems"
+],
+"2017-10A-5": [
+"algebra.systems"
+],
+"2017-10A-6": [
+"counting.casework"
+],
+"2017-10A-7": [
+"geometry.triangles"
+],
+"2017-10A-8": [
+"counting.combinatorics"
+],
+"2017-10A-9": [
+"algebra.systems"
+],
+"2017-10A-10": [
+"geometry.triangles",
+"algebra.inequalities"
+],
+"2017-10A-11": [
+"geometry.solid"
+],
+"2017-10A-12": [
+"geometry.coordinate"
+],
+"2017-10A-13": [
+"number_theory.modular",
+"algebra.sequences"
+],
+"2017-10A-14": [
+"algebra.systems"
+],
+"2017-10A-15": [
+"counting.geometric_probability"
+],
+"2017-10A-16": [
+"number_theory.divisibility",
+"counting.casework"
+],
+"2017-10A-17": [
+"geometry.circles",
+"geometry.coordinate"
+],
+"2017-10A-18": [
+"algebra.sequences",
+"counting.combinatorics"
+],
+"2017-10A-19": [
+"counting.casework"
+],
+"2017-10A-20": [
+"number_theory.modular",
+"number_theory.divisibility"
+],
+"2017-10A-21": [
+"geometry.triangles"
+],
+"2017-10A-22": [
+"geometry.circles",
+"geometry.triangles"
+],
+"2017-10A-23": [
+"counting.combinatorics",
+"geometry.coordinate"
+],
+"2017-10A-24": [
+"algebra.polynomials"
+],
+"2017-10A-25": [
+"number_theory.divisibility",
+"counting.casework"
+],
+"2017-10B-1": [
+"number_theory.divisibility",
+"algebra.systems"
+],
+"2017-10B-2": [
+"algebra.systems"
+],
+"2017-10B-3": [
+"algebra.inequalities"
+],
+"2017-10B-4": [
+"algebra.systems"
+],
+"2017-10B-5": [
+"algebra.systems"
+],
+"2017-10B-6": [
+"geometry.solid"
+],
+"2017-10B-7": [
+"algebra.systems"
+],
+"2017-10B-8": [
+"geometry.coordinate"
+],
+"2017-10B-9": [
+"counting.combinatorics"
+],
+"2017-10B-10": [
+"geometry.coordinate"
+],
+"2017-10B-11": [
+"algebra.systems"
+],
+"2017-10B-12": [
+"algebra.systems"
+],
+"2017-10B-13": [
+"counting.casework"
+],
+"2017-10B-14": [
+"number_theory.modular"
+],
+"2017-10B-15": [
+"geometry.triangles"
+],
+"2017-10B-16": [
+"counting.casework",
+"number_theory.divisibility"
+],
+"2017-10B-17": [
+"counting.combinatorics"
+],
+"2017-10B-18": [
+"counting.casework",
+"geometry.transformations"
+],
+"2017-10B-19": [
+"geometry.triangles"
+],
+"2017-10B-20": [
+"number_theory.divisibility",
+"number_theory.primes"
+],
+"2017-10B-21": [
+"geometry.triangles",
+"geometry.circles"
+],
+"2017-10B-22": [
+"geometry.circles",
+"geometry.triangles"
+],
+"2017-10B-23": [
+"number_theory.modular"
+],
+"2017-10B-24": [
+"geometry.coordinate",
+"geometry.triangles"
+],
+"2017-10B-25": [
+"number_theory.modular",
+"counting.casework"
+],
+"2017-12A-1": [
+"algebra.systems"
+],
+"2017-12A-2": [
+"algebra.systems"
+],
+"2017-12A-5": [
+"counting.combinatorics"
+],
+"2017-12A-6": [
+"geometry.triangles",
+"algebra.inequalities"
+],
+"2017-12A-7": [
+"algebra.functions",
+"algebra.sequences"
+],
+"2017-12A-8": [
+"geometry.solid"
+],
+"2017-12A-9": [
+"geometry.coordinate"
+],
+"2017-12A-10": [
+"counting.geometric_probability"
+],
+"2017-12A-11": [
+"geometry.triangles"
+],
+"2017-12A-12": [
+"number_theory.divisibility"
+],
+"2017-12A-13": [
+"algebra.systems"
+],
+"2017-12A-15": [
+"algebra.functions"
+],
+"2017-12A-16": [
+"geometry.circles"
+],
+"2017-12A-17": [
+"geometry.coordinate",
+"number_theory.divisibility"
+],
+"2017-12A-19": [
+"geometry.triangles"
+],
+"2017-12A-20": [
+"algebra.logs"
+],
+"2017-12A-21": [
+"algebra.polynomials",
+"counting.casework"
+],
+"2017-12A-22": [
+"counting.casework",
+"geometry.coordinate"
+],
+"2017-12A-24": [
+"geometry.circles",
+"geometry.triangles"
+],
+"2017-12A-25": [
+"geometry.coordinate",
+"counting.combinatorics"
+],
+"2017-12B-1": [
+"algebra.systems"
+],
+"2017-12B-5": [
+"algebra.systems"
+],
+"2017-12B-6": [
+"geometry.circles",
+"geometry.coordinate"
+],
+"2017-12B-7": [
+"algebra.functions"
+],
+"2017-12B-8": [
+"geometry.triangles",
+"algebra.polynomials"
+],
+"2017-12B-9": [
+"geometry.circles",
+"geometry.coordinate"
+],
+"2017-12B-10": [
+"algebra.systems"
+],
+"2017-12B-12": [
+"geometry.coordinate",
+"algebra.polynomials"
+],
+"2017-12B-13": [
+"counting.casework",
+"geometry.transformations"
+],
+"2017-12B-14": [
+"geometry.solid"
+],
+"2017-12B-15": [
+"geometry.triangles"
+],
+"2017-12B-17": [
+"counting.combinatorics"
+],
+"2017-12B-18": [
+"geometry.circles",
+"geometry.triangles"
+],
+"2017-12B-20": [
+"counting.geometric_probability",
+"algebra.logs"
+],
+"2017-12B-21": [
+"number_theory.divisibility",
+"number_theory.modular"
+],
+"2017-12B-22": [
+"counting.casework",
+"counting.combinatorics"
+]
+}

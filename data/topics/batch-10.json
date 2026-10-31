@@ -1,0 +1,355 @@
+{
+ "2013-10A-19": [
+  "number_theory.bases",
+  "number_theory.divisibility"
+ ],
+ "2013-10A-20": [
+  "geometry.transformations",
+  "geometry.triangles"
+ ],
+ "2013-10A-21": [
+  "number_theory.divisibility",
+  "algebra.systems"
+ ],
+ "2013-10A-22": [
+  "geometry.solid",
+  "geometry.triangles"
+ ],
+ "2013-10A-23": [
+  "geometry.circles",
+  "number_theory.divisibility"
+ ],
+ "2013-10A-24": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2013-10A-25": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2013-10B-1": [
+  "algebra.systems"
+ ],
+ "2013-10B-2": [
+  "algebra.systems"
+ ],
+ "2013-10B-3": [
+  "algebra.systems"
+ ],
+ "2013-10B-4": [
+  "algebra.sequences"
+ ],
+ "2013-10B-5": [
+  "algebra.inequalities"
+ ],
+ "2013-10B-6": [
+  "algebra.systems"
+ ],
+ "2013-10B-7": [
+  "geometry.triangles",
+  "geometry.circles"
+ ],
+ "2013-10B-8": [
+  "algebra.systems"
+ ],
+ "2013-10B-9": [
+  "number_theory.divisibility",
+  "number_theory.primes"
+ ],
+ "2013-10B-10": [
+  "algebra.systems"
+ ],
+ "2013-10B-11": [
+  "algebra.polynomials",
+  "geometry.coordinate"
+ ],
+ "2013-10B-12": [
+  "counting.combinatorics"
+ ],
+ "2013-10B-13": [
+  "algebra.sequences"
+ ],
+ "2013-10B-14": [
+  "algebra.polynomials",
+  "geometry.coordinate"
+ ],
+ "2013-10B-15": [
+  "geometry.triangles"
+ ],
+ "2013-10B-16": [
+  "geometry.triangles"
+ ],
+ "2013-10B-17": [
+  "algebra.systems",
+  "number_theory.modular"
+ ],
+ "2013-10B-18": [
+  "counting.casework",
+  "number_theory.divisibility"
+ ],
+ "2013-10B-19": [
+  "algebra.polynomials",
+  "algebra.sequences"
+ ],
+ "2013-10B-20": [
+  "number_theory.primes",
+  "number_theory.divisibility"
+ ],
+ "2013-10B-21": [
+  "algebra.sequences",
+  "number_theory.modular"
+ ],
+ "2013-10B-22": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2013-10B-23": [
+  "geometry.triangles",
+  "geometry.circles"
+ ],
+ "2013-10B-24": [
+  "number_theory.divisibility",
+  "number_theory.primes"
+ ],
+ "2013-10B-25": [
+  "number_theory.bases",
+  "number_theory.modular"
+ ],
+ "2013-12A-2": [
+  "algebra.systems"
+ ],
+ "2013-12A-5": [
+  "algebra.systems"
+ ],
+ "2013-12A-7": [
+  "algebra.sequences"
+ ],
+ "2013-12A-8": [
+  "algebra.polynomials"
+ ],
+ "2013-12A-10": [
+  "number_theory.divisibility"
+ ],
+ "2013-12A-11": [
+  "geometry.triangles",
+  "algebra.systems"
+ ],
+ "2013-12A-12": [
+  "geometry.triangles",
+  "algebra.sequences"
+ ],
+ "2013-12A-13": [
+  "geometry.coordinate"
+ ],
+ "2013-12A-14": [
+  "algebra.logs",
+  "algebra.sequences"
+ ],
+ "2013-12A-15": [
+  "counting.casework",
+  "counting.combinatorics"
+ ],
+ "2013-12A-16": [
+  "algebra.systems",
+  "algebra.inequalities"
+ ],
+ "2013-12A-17": [
+  "number_theory.divisibility",
+  "algebra.systems"
+ ],
+ "2013-12A-18": [
+  "geometry.solid",
+  "geometry.triangles"
+ ],
+ "2013-12A-20": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2013-12A-21": [
+  "algebra.logs",
+  "algebra.inequalities"
+ ],
+ "2013-12A-22": [
+  "counting.casework",
+  "number_theory.divisibility"
+ ],
+ "2013-12A-23": [
+  "geometry.transformations",
+  "geometry.circles"
+ ],
+ "2013-12A-24": [
+  "counting.casework",
+  "counting.combinatorics"
+ ],
+ "2013-12A-25": [
+  "algebra.polynomials",
+  "geometry.coordinate"
+ ],
+ "2013-12B-8": [
+  "geometry.coordinate"
+ ],
+ "2013-12B-9": [
+  "number_theory.divisibility",
+  "number_theory.primes"
+ ],
+ "2013-12B-11": [
+  "geometry.coordinate",
+  "algebra.sequences"
+ ],
+ "2013-12B-12": [
+  "counting.casework"
+ ],
+ "2013-12B-13": [
+  "geometry.triangles",
+  "algebra.sequences"
+ ],
+ "2013-12B-16": [
+  "geometry.triangles"
+ ],
+ "2013-12B-17": [
+  "algebra.inequalities"
+ ],
+ "2013-12B-18": [
+  "counting.casework",
+  "number_theory.modular"
+ ],
+ "2013-12B-20": [
+  "geometry.coordinate",
+  "algebra.functions"
+ ],
+ "2013-12B-21": [
+  "geometry.coordinate",
+  "counting.combinatorics"
+ ],
+ "2013-12B-22": [
+  "algebra.logs",
+  "algebra.polynomials"
+ ],
+ "2013-12B-24": [
+  "geometry.triangles"
+ ],
+ "2013-12B-25": [
+  "algebra.polynomials",
+  "number_theory.divisibility",
+  "counting.casework"
+ ],
+ "2014-10A-1": [
+  "algebra.systems"
+ ],
+ "2014-10A-2": [
+  "algebra.systems"
+ ],
+ "2014-10A-3": [
+  "algebra.systems"
+ ],
+ "2014-10A-4": [
+  "counting.casework"
+ ],
+ "2014-10A-5": [
+  "algebra.systems"
+ ],
+ "2014-10A-6": [
+  "algebra.systems"
+ ],
+ "2014-10A-7": [
+  "algebra.inequalities"
+ ],
+ "2014-10A-8": [
+  "number_theory.divisibility"
+ ],
+ "2014-10A-9": [
+  "geometry.triangles"
+ ],
+ "2014-10A-10": [
+  "algebra.sequences"
+ ],
+ "2014-10A-11": [
+  "algebra.inequalities",
+  "algebra.systems"
+ ],
+ "2014-10A-12": [
+  "geometry.circles",
+  "geometry.triangles"
+ ],
+ "2014-10A-13": [
+  "geometry.triangles"
+ ],
+ "2014-10A-14": [
+  "geometry.coordinate"
+ ],
+ "2014-10A-15": [
+  "algebra.systems"
+ ],
+ "2014-10A-16": [
+  "geometry.coordinate",
+  "geometry.triangles"
+ ],
+ "2014-10A-17": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2014-10A-18": [
+  "geometry.coordinate",
+  "geometry.triangles"
+ ],
+ "2014-10A-19": [
+  "geometry.solid",
+  "geometry.triangles"
+ ],
+ "2014-10A-20": [
+  "number_theory.divisibility",
+  "algebra.sequences"
+ ],
+ "2014-10A-21": [
+  "number_theory.divisibility",
+  "geometry.coordinate"
+ ],
+ "2014-10A-22": [
+  "geometry.triangles"
+ ],
+ "2014-10A-23": [
+  "geometry.transformations",
+  "geometry.triangles"
+ ],
+ "2014-10A-24": [
+  "algebra.sequences"
+ ],
+ "2014-10A-25": [
+  "algebra.logs",
+  "algebra.systems"
+ ],
+ "2014-10B-1": [
+  "algebra.systems"
+ ],
+ "2014-10B-2": [
+  "algebra.logs"
+ ],
+ "2014-10B-3": [
+  "algebra.systems"
+ ],
+ "2014-10B-4": [
+  "algebra.systems"
+ ],
+ "2014-10B-5": [
+  "algebra.systems"
+ ],
+ "2014-10B-6": [
+  "algebra.systems"
+ ],
+ "2014-10B-7": [
+  "algebra.systems"
+ ],
+ "2014-10B-8": [
+  "algebra.systems"
+ ],
+ "2014-10B-9": [
+  "algebra.systems"
+ ],
+ "2014-10B-10": [
+  "number_theory.divisibility",
+  "counting.casework"
+ ],
+ "2014-10B-11": [
+  "algebra.systems"
+ ]
+}

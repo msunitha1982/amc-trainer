@@ -1,0 +1,6 @@
+{
+  "date": "2026-10-30",
+  "method": "30 random problems per major topic (by primary tag, seed 2026), 120 total, read by hand; plus keyword probes for systematic misses (probability, expected value, bases, logs, remainders).",
+  "result": "119/120 sampled problems had sensible tags; 1 had a secondary topic listed first. Probes found one systematic error: 4 probability problems tagged only in their number-theory/algebra aspect with no Counting & Probability tag. 'base-10 representation' and 'average' phrasing were correctly not tagged as bases / expected value.",
+  "fixes": "All 5 corrected in data/topic-fixes.json, which overrides classifier output on every merge."
+}

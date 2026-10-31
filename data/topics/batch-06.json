@@ -1,0 +1,345 @@
+{
+ "2008-10B-6": [
+  "algebra.systems"
+ ],
+ "2008-10B-7": [
+  "geometry.triangles"
+ ],
+ "2008-10B-8": [
+  "algebra.systems",
+  "number_theory.divisibility"
+ ],
+ "2008-10B-9": [
+  "algebra.polynomials"
+ ],
+ "2008-10B-10": [
+  "geometry.circles",
+  "geometry.triangles"
+ ],
+ "2008-10B-11": [
+  "algebra.sequences",
+  "algebra.systems"
+ ],
+ "2008-10B-12": [
+  "algebra.systems"
+ ],
+ "2008-10B-13": [
+  "algebra.sequences"
+ ],
+ "2008-10B-14": [
+  "geometry.coordinate",
+  "geometry.transformations"
+ ],
+ "2008-10B-15": [
+  "number_theory.divisibility",
+  "geometry.triangles"
+ ],
+ "2008-10B-16": [
+  "counting.casework"
+ ],
+ "2008-10B-17": [
+  "counting.combinatorics"
+ ],
+ "2008-10B-18": [
+  "algebra.systems"
+ ],
+ "2008-10B-19": [
+  "geometry.solid",
+  "geometry.circles"
+ ],
+ "2008-10B-20": [
+  "counting.combinatorics"
+ ],
+ "2008-10B-21": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2008-10B-22": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2008-10B-23": [
+  "number_theory.divisibility",
+  "algebra.polynomials"
+ ],
+ "2008-10B-24": [
+  "geometry.triangles",
+  "geometry.circles"
+ ],
+ "2008-10B-25": [
+  "algebra.systems"
+ ],
+ "2008-12A-2": [
+  "algebra.systems"
+ ],
+ "2008-12A-8": [
+  "geometry.solid"
+ ],
+ "2008-12A-11": [
+  "geometry.solid",
+  "counting.casework"
+ ],
+ "2008-12A-12": [
+  "algebra.functions"
+ ],
+ "2008-12A-14": [
+  "geometry.coordinate"
+ ],
+ "2008-12A-16": [
+  "algebra.logs",
+  "algebra.sequences"
+ ],
+ "2008-12A-17": [
+  "number_theory.modular"
+ ],
+ "2008-12A-18": [
+  "geometry.solid",
+  "geometry.triangles"
+ ],
+ "2008-12A-19": [
+  "counting.combinatorics",
+  "algebra.polynomials"
+ ],
+ "2008-12A-20": [
+  "geometry.triangles",
+  "geometry.circles"
+ ],
+ "2008-12A-21": [
+  "counting.combinatorics",
+  "counting.casework"
+ ],
+ "2008-12A-23": [
+  "geometry.coordinate",
+  "algebra.polynomials"
+ ],
+ "2008-12A-24": [
+  "geometry.triangles",
+  "algebra.inequalities"
+ ],
+ "2008-12A-25": [
+  "geometry.coordinate",
+  "geometry.transformations"
+ ],
+ "2008-12B-1": [
+  "counting.casework"
+ ],
+ "2008-12B-3": [
+  "algebra.systems"
+ ],
+ "2008-12B-4": [
+  "geometry.circles"
+ ],
+ "2008-12B-5": [
+  "algebra.systems",
+  "number_theory.divisibility"
+ ],
+ "2008-12B-6": [
+  "algebra.systems"
+ ],
+ "2008-12B-7": [
+  "algebra.functions"
+ ],
+ "2008-12B-9": [
+  "geometry.circles",
+  "geometry.triangles"
+ ],
+ "2008-12B-10": [
+  "algebra.systems"
+ ],
+ "2008-12B-11": [
+  "geometry.solid"
+ ],
+ "2008-12B-12": [
+  "algebra.sequences"
+ ],
+ "2008-12B-13": [
+  "geometry.triangles",
+  "geometry.coordinate"
+ ],
+ "2008-12B-14": [
+  "algebra.logs",
+  "geometry.circles"
+ ],
+ "2008-12B-15": [
+  "geometry.triangles"
+ ],
+ "2008-12B-16": [
+  "number_theory.divisibility",
+  "algebra.polynomials"
+ ],
+ "2008-12B-17": [
+  "geometry.coordinate",
+  "algebra.polynomials"
+ ],
+ "2008-12B-18": [
+  "geometry.solid",
+  "geometry.triangles"
+ ],
+ "2008-12B-19": [
+  "algebra.inequalities",
+  "geometry.coordinate"
+ ],
+ "2008-12B-21": [
+  "counting.geometric_probability",
+  "geometry.circles"
+ ],
+ "2008-12B-22": [
+  "counting.combinatorics"
+ ],
+ "2008-12B-23": [
+  "algebra.logs",
+  "number_theory.divisibility"
+ ],
+ "2008-12B-24": [
+  "algebra.sequences",
+  "geometry.triangles",
+  "geometry.coordinate"
+ ],
+ "2008-12B-25": [
+  "geometry.triangles"
+ ],
+ "2009-10A-1": [
+  "algebra.systems"
+ ],
+ "2009-10A-2": [
+  "counting.casework"
+ ],
+ "2009-10A-3": [
+  "algebra.systems"
+ ],
+ "2009-10A-4": [
+  "algebra.systems"
+ ],
+ "2009-10A-5": [
+  "number_theory.divisibility"
+ ],
+ "2009-10A-6": [
+  "geometry.circles"
+ ],
+ "2009-10A-7": [
+  "algebra.systems"
+ ],
+ "2009-10A-8": [
+  "algebra.systems"
+ ],
+ "2009-10A-9": [
+  "algebra.sequences",
+  "number_theory.primes"
+ ],
+ "2009-10A-10": [
+  "geometry.triangles"
+ ],
+ "2009-10A-11": [
+  "geometry.solid",
+  "algebra.polynomials"
+ ],
+ "2009-10A-12": [
+  "geometry.triangles"
+ ],
+ "2009-10A-13": [
+  "algebra.logs"
+ ],
+ "2009-10A-14": [
+  "geometry.triangles",
+  "algebra.systems"
+ ],
+ "2009-10A-15": [
+  "algebra.sequences"
+ ],
+ "2009-10A-16": [
+  "counting.casework"
+ ],
+ "2009-10A-17": [
+  "geometry.triangles"
+ ],
+ "2009-10A-18": [
+  "algebra.systems"
+ ],
+ "2009-10A-19": [
+  "number_theory.divisibility",
+  "geometry.circles"
+ ],
+ "2009-10A-20": [
+  "algebra.systems"
+ ],
+ "2009-10A-21": [
+  "geometry.circles"
+ ],
+ "2009-10A-22": [
+  "counting.combinatorics"
+ ],
+ "2009-10A-23": [
+  "geometry.triangles"
+ ],
+ "2009-10A-24": [
+  "counting.combinatorics",
+  "geometry.solid"
+ ],
+ "2009-10A-25": [
+  "number_theory.modular",
+  "number_theory.divisibility"
+ ],
+ "2009-10B-1": [
+  "algebra.systems",
+  "number_theory.divisibility"
+ ],
+ "2009-10B-2": [
+  "algebra.systems"
+ ],
+ "2009-10B-3": [
+  "algebra.systems"
+ ],
+ "2009-10B-4": [
+  "geometry.triangles"
+ ],
+ "2009-10B-5": [
+  "algebra.systems"
+ ],
+ "2009-10B-6": [
+  "number_theory.divisibility"
+ ],
+ "2009-10B-7": [
+  "counting.casework"
+ ],
+ "2009-10B-8": [
+  "algebra.systems"
+ ],
+ "2009-10B-9": [
+  "geometry.triangles"
+ ],
+ "2009-10B-10": [
+  "geometry.triangles"
+ ],
+ "2009-10B-11": [
+  "counting.combinatorics"
+ ],
+ "2009-10B-12": [
+  "geometry.triangles",
+  "counting.casework"
+ ],
+ "2009-10B-13": [
+  "number_theory.modular",
+  "geometry.transformations"
+ ],
+ "2009-10B-14": [
+  "algebra.sequences"
+ ],
+ "2009-10B-15": [
+  "algebra.systems"
+ ],
+ "2009-10B-16": [
+  "geometry.circles",
+  "geometry.triangles"
+ ],
+ "2009-10B-17": [
+  "geometry.coordinate",
+  "geometry.triangles"
+ ],
+ "2009-10B-18": [
+  "geometry.triangles",
+  "geometry.coordinate"
+ ],
+ "2009-10B-19": [
+  "counting.casework"
+ ]
+}
