@@ -166,7 +166,7 @@ export function Avatar({ name, color, size = 32 }: { name: string; color: string
       className="inline-flex shrink-0 items-center justify-center rounded-[3px] font-semibold text-white uppercase"
       style={{ width: size, height: size, background: bg, fontSize: size * 0.45 }}
     >
-      {name.replace(/^solver_/, '').slice(0, 1) || '?'}
+      {name.slice(0, 1) || '?'}
     </span>
   )
 }

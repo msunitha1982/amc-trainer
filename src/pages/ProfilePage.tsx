@@ -125,7 +125,7 @@ export function ProfilePage({ username }: { username: string }) {
       </div>
       {error && <ErrorNote>{error}</ErrorNote>}
 
-      <Section title="Activity" aside={<span className="text-sm text-ink-3">Longest streak {p.longest_streak} days</span>}>
+      <Section title="Activity" aside={<span className="text-sm text-ink-3">Longest streak {p.longest_streak} {p.longest_streak === 1 ? 'day' : 'days'}</span>}>
         <Heatmap days={activity} />
       </Section>
 

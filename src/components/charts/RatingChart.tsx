@@ -58,6 +58,8 @@ export function RatingChart({ points }: { points: [number, number][] }) {
         <text x={pad.l} y={H - 6} className="fill-[var(--text-muted)] text-[10px]">{fmt(minT)}</text>
         <text x={W - pad.r} y={H - 6} textAnchor="end" className="fill-[var(--text-muted)] text-[10px]">{fmt(maxT)}</text>
         <path d={path} fill="none" stroke="var(--series-1)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        {/* Mark the latest rating so a single answer is still visible. */}
+        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].r)} r={4} fill="var(--series-1)" />
         {h && hover !== null && (
           <g>
             <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke="var(--text-muted)" strokeWidth={1} strokeDasharray="3 3" />
